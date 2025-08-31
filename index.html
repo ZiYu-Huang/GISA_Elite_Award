@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>評分系統</title>
+  <style>
+    :root{
+      --bg:#f6f7fb;--card:#fff;--muted:#6b7280;--primary:#1f2937;--border:#e5e7eb;--accent:#fff59d;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans TC",sans-serif;background:var(--bg);color:#111827}
+    .wrap{max-width:1024px;margin:42px auto;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.06)}
+    h1{margin:0 0 8px 0;font-size:24px}
+    .sub{color:var(--muted);font-size:14px;margin-bottom:16px}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
+    label{font-weight:600}
+    select,input,textarea,button{font-size:16px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff}
+    select,input{min-width:120px}
+    input[type=number]{width:110px}
+    button{cursor:pointer}
+    button.primary{background:#111827;color:#fff}
+    button.ghost{background:#fff}
+    .hint{color:#b91c1c;font-weight:700}
+    .scoreBox{margin-left:auto;background:var(--accent);padding:10px 14px;border-radius:10px;border:1px solid #facc15}
+    .scoreBox b{font-size:18px}
+
+    .block{border:1px solid var(--border);border-radius:14px;margin:18px 0;overflow:hidden}
+    .block>header{display:flex;justify-content:space-between;align-items:center;background:var(--accent);padding:10px 14px;border-bottom:1px solid #facc15}
+    .block>header h3{margin:0;font-size:16px}
+    .grid{display:grid;grid-template-columns: 1fr 140px 1fr 140px;gap:12px;padding:14px}
+    .grid label{align-self:center}
+
+    textarea{width:100%;min-height:100px}
+    .muted{color:var(--muted)}
+    .msg{margin-left:8px}
+    .pill{padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;font-size:12px}
+    .badge{padding:2px 8px;border-radius:6px;border:1px solid #fde68a;background:#fffbeb;color:#92400e;font-size:12px}
+    .footer{margin-top:8px;color:var(--muted);font-size:12px}
+    .divider{height:1px;background:var(--border);margin:16px 0}
+    .link{color:#2563eb;text-decoration:none}
+    .link:hover{text-decoration:underline}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1 id="title">評分系統</h1>
+    <div class="sub">請使用專屬連結（例如 <span class="pill">?judge=黃煥 教授</span>）。輸入 0–100 分，系統會依權重即時計算總分。</div>
+
+    <div class="row">
+      <label for="project">評分團隊</label>
+      <select id="project"></select>
+      <button class="ghost" id="btnLast">取得前一次評分紀錄</button>
+      <a id="btnRefresh" class="link" href="#">重新載入名單</a>
+      <span class="hint">（請輸入 0～100，滿分 100）</span>
+      <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
+    </div>
+
+    <!-- 一、實證規劃 35% -->
+    <section class="block" id="secP">
+      <header>
+        <h3>一、實證規劃 <span class="badge">35%</span></h3>
+        <span class="muted">P1 10%・P2 15%・P3 10%</span>
+      </header>
+      <div class="grid">
+        <label for="P1">規劃內容切分 (10)</label><input type="number" id="P1" min="0" max="100" value="0">
+        <label for="P2">實證規劃完整且可行性 (15)</label><input type="number" id="P2" min="0" max="100" value="0">
+        <label for="P3">績效指標具挑戰性 (10)</label><input type="number" id="P3" min="0" max="100" value="0">
+      </div>
+    </section>
+
+    <!-- 二、商模創新 35% -->
+    <section class="block" id="secB">
+      <header>
+        <h3>二、商模創新 <span class="badge">35%</span></h3>
+        <span class="muted">B1 15%・B2 10%・B3 10%</span>
+      </header>
+      <div class="grid">
+        <label for="B1">商模創新度 (15)</label><input type="number" id="B1" min="0" max="100" value="0">
+        <label for="B2">民眾之接受與使用價值性 (10)</label><input type="number" id="B2" min="0" max="100" value="0">
+        <label for="B3">擴展性/市場潛力 (10)</label><input type="number" id="B3" min="0" max="100" value="0">
+      </div>
+    </section>
+
+    <!-- 三、擴散效益 20% -->
+    <section class="block" id="secD">
+      <header>
+        <h3>三、擴散效益 <span class="badge">20%</span></h3>
+        <span class="muted">D1 10%・D2 10%</span>
+      </header>
+      <div class="grid">
+        <label for="D1">提案成果擴散成效 (10)</label><input type="number" id="D1" min="0" max="100" value="0">
+        <label for="D2">擴散所需資源/網絡 (10)</label><input type="number" id="D2" min="0" max="100" value="0">
+      </div>
+    </section>
+
+    <!-- 四、國際執行力 10% -->
+    <section class="block" id="secG">
+      <header>
+        <h3>四、國際執行力 <span class="badge">10%</span></h3>
+        <span class="muted">G1 5%・G2 5%</span>
+      </header>
+      <div class="grid">
+        <label for="G1">展示/簡報表現 (5)</label><input type="number" id="G1" min="0" max="100" value="0">
+        <label for="G2">國際合作/布局能力 (5)</label><input type="number" id="G2" min="0" max="100" value="0">
+      </div>
+    </section>
+
+    <div class="row">
+      <label for="comment">委員意見</label>
+      <textarea id="comment" maxlength="300" placeholder="（可留空，最多 300 字）"></textarea>
+    </div>
+
+    <div class="row">
+      <button class="primary" id="btnSave">送出評分</button>
+      <span class="msg muted" id="msg"></span>
+    </div>
+
+    <div class="divider"></div>
+    <div class="footer">前端部署：GitHub Pages。後端：Google Apps Script Web App。以 <span class="pill">?judge=姓名</span> 作為專屬連結。</div>
+  </div>
+
+  <script>
+    /* ========== 需替換：你的 GAS Web App URL ========== */
+    const API_URL = 'PUT_YOUR_GAS_WEBAPP_URL_HERE';
+
+    /* 權重（與畫面說明一致） */
+    const W = { P1:.10, P2:.15, P3:.10, B1:.15, B2:.10, B3:.10, D1:.10, D2:.10, G1:.05, G2:.05 };
+
+    const $ = (q)=>document.querySelector(q);
+    const params = new URLSearchParams(location.search);
+    const JUDGE = decodeURIComponent(params.get('judge')||'').trim();
+
+    const els = ['P1','P2','P3','B1','B2','B3','D1','D2','G1','G2'].map(id=>document.getElementById(id));
+
+    function toast(msg, ok=true){
+      const m = $('#msg');
+      m.textContent = msg; m.style.color = ok? '#059669' : '#b91c1c';
+    }
+
+    function liveTotal(){
+      let t = 0; els.forEach(el=>{ const v = Number(el.value||0); if(!isNaN(v)) t += v * (W[el.id]||0); });
+      $('#liveTotal').textContent = t.toFixed(2);
+      return t;
+    }
+
+    function buildProjectOptionText(p){
+      return `${p.id}｜${p.team}${p.hasScore ? '（已評分）' : ''}`;
+    }
+
+    async function apiGET(q){
+      const url = API_URL + (API_URL.includes('?')?'&':'?') + q;
+      const r = await fetch(url, { method:'GET' });
+      if(!r.ok) throw new Error('連線失敗');
+      return r.json();
+    }
+    async function apiPOST(body){
+      const r = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      if(!r.ok) throw new Error('送出失敗');
+      return r.json();
+    }
+
+    async function loadInit(){
+      if(!API_URL || API_URL.startsWith('PUT_')){
+        toast('請先在原始碼將 API_URL 換成你的 GAS 網址', false);
+        return;
+      }
+      const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
+      $('#title').textContent = JUDGE? `${JUDGE} 評分表` : '評分系統（未帶入評審姓名）';
+      const sel = $('#project'); sel.innerHTML = '';
+      if(!d.projects || !d.projects.length){ sel.innerHTML = '<option value="">（尚無隊伍）</option>'; return; }
+      d.projects.forEach(p=>{
+        const opt = document.createElement('option');
+        opt.value = JSON.stringify(p);
+        opt.textContent = buildProjectOptionText(p);
+        sel.appendChild(opt);
+      });
+    }
+
+    function fillScores(map){
+      if(!map) return;
+      for(const id of Object.keys(W)){
+        const el = document.getElementById(id);
+        const keys = [id, // P1 形式
+                      // 也容許中文表頭回傳（例如 P-規劃內容…）
+                      Object.keys(map).find(k=>k.startsWith(id.charAt(0)) && k.includes('-') && k.includes(el.previousElementSibling.textContent.split('(')[0].trim()))
+        ].filter(Boolean);
+        let v = 0;
+        for(const k of keys){ if(map[k]!=null){ v = map[k]; break; } }
+        el.value = v;
+      }
+      liveTotal();
+    }
+
+    async function loadLast(){
+      const p = getSelectedProject();
+      if(!p) return toast('請先選擇團隊', false);
+      const data = await apiGET(`action=last&judge=${encodeURIComponent(JUDGE)}&projectId=${encodeURIComponent(p.id)}`);
+      if(!data || !data.items){ toast('沒有上一筆評分'); resetScores(); return; }
+      fillScores(data.items);
+      $('#comment').value = data.comment || '';
+      toast('已載入前一次評分');
+    }
+
+    function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
+
+    function getSelectedProject(){
+      const v = $('#project').value; if(!v) return null; return JSON.parse(v);
+    }
+
+    async function save(){
+      const p = getSelectedProject();
+      if(!p) return toast('請先選擇團隊', false);
+      const scores = {}; els.forEach(el=>{
+        const n = Number(el.value||0);
+        if(isNaN(n) || n<0 || n>100) throw new Error('每項需為 0~100');
+        scores[el.id] = n;
+      });
+      const body = { action:'save', data:{ judge:JUDGE, projectId:p.id, team:p.team, vendor:p.vendor||'', scores, comment:$('#comment').value.trim() } };
+      const res = await apiPOST(body);
+      toast(`已送出，總分 ${res.total?.toFixed?res.total.toFixed(2):res.total}`);
+      // 在下拉顯示已評分
+      p.hasScore = true; $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
+    }
+
+    // 事件
+    els.forEach(el=> el.addEventListener('input', liveTotal));
+    $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
+    $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
+    $('#btnRefresh').addEventListener('click', (e)=>{ e.preventDefault(); loadInit().catch(()=>{}); });
+
+    // 啟動
+    liveTotal();
+    loadInit().catch(e=> toast(e.message||'初始化失敗', false));
+  </script>
+</body>
+</html>
