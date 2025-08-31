@@ -46,7 +46,6 @@
       <label for="project">評分團隊</label>
       <select id="project"></select>
       <button id="btnLast">取得前一次評分紀錄</button>
-      <a id="btnRefresh" class="link" href="#">重新載入名單</a>
       <span class="hint">（請輸入 0～100，滿分 100）</span>
       <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
     </div>
@@ -218,7 +217,6 @@
     els.forEach(el=> el.addEventListener('input', liveTotal));
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
-    $('#btnRefresh').addEventListener('click', (e)=>{ e.preventDefault(); loadInit().catch(()=>{}); });
     // 切換團隊時，重置所有分數與意見，避免沿用上一隊的值
     document.getElementById('project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
 
