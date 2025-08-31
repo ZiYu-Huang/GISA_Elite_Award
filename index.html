@@ -45,7 +45,7 @@
 <body>
   <div class="wrap">
     <h1 id="title">評分系統</h1>
-    <div class="sub">請使用專屬連結（例如 <span class="pill">judge=黃大貓吃小魚</span>）。輸入 0–100 分，系統會依權重即時計算總分。</div>
+    <div class="sub">請使用專屬連結（例如 <span class="pill">?judge=黃煥 教授</span>）。輸入 0–100 分，系統會依權重即時計算總分。</div>
 
     <div class="row">
       <label for="project">評分團隊</label>
@@ -122,8 +122,8 @@
 
   <script>
     /* ========== 需替換：你的 GAS Web App URL ========== */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec';
-    
+    const API_URL = 'PUT_YOUR_GAS_WEBAPP_URL_HERE';
+
     /* 權重（與畫面說明一致） */
     const W = { P1:.10, P2:.15, P3:.10, B1:.15, B2:.10, B3:.10, D1:.10, D2:.10, G1:.05, G2:.05 };
 
@@ -155,8 +155,16 @@
       return r.json();
     }
     async function apiPOST(body){
-      const r = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      if(!r.ok) throw new Error('送出失敗');
+      let r;
+      try{
+        r = await fetch(API_URL, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      }catch(err){
+        throw new Error('無法連線到後端（網路或權限問題）。');
+      }
+      if(!r.ok){
+        let txt = await r.text().catch(()=> '');
+        throw new Error(`後端回應錯誤 ${r.status}${txt? '｜'+txt.slice(0,120):''}`);
+      }
       return r.json();
     }
 
@@ -210,6 +218,7 @@
 
     async function save(){
       const p = getSelectedProject();
+      const btn = document.getElementById('btnSave');
       if(!p) return toast('請先選擇團隊', false);
       const scores = {}; els.forEach(el=>{
         const n = Number(el.value||0);
@@ -217,10 +226,16 @@
         scores[el.id] = n;
       });
       const body = { action:'save', data:{ judge:JUDGE, projectId:p.id, team:p.team, vendor:p.vendor||'', scores, comment:$('#comment').value.trim() } };
-      const res = await apiPOST(body);
-      toast(`已送出，總分 ${res.total?.toFixed?res.total.toFixed(2):res.total}`);
-      // 在下拉顯示已評分
-      p.hasScore = true; $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
+      btn.disabled = true; btn.textContent = '送出中…';
+      try{
+        const res = await apiPOST(body);
+        toast(`已送出，總分 ${res.total?.toFixed?res.total.toFixed(2):res.total}`);
+        p.hasScore = true; $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
+      }catch(e){
+        toast(e.message || '送出失敗', false);
+      }finally{
+        btn.disabled = false; btn.textContent = '送出評分';
+      }
     }
 
     // 事件
