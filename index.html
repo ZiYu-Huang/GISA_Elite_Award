@@ -46,7 +46,6 @@
       <label for="project">評分團隊</label>
       <select id="project"></select>
       <button id="btnLast">取得前一次評分紀錄</button>
-      <button id="btnList">查看我的評分</button>
       <span class="hint">（請輸入 0～100，滿分 100）</span>
       <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
     </div>
@@ -125,15 +124,6 @@
       <button class="primary" id="btnSave">送出評分</button>
       <span class="msg muted" id="msg"></span>
     </div>
-
-    <!-- 我的評分總覽 -->
-    <section class="block" id="myList" style="display:none">
-      <header>
-        <h3>我的評分總覽</h3>
-        <span class="muted">點「檢視」可直接切換並載入該隊上次評分</span>
-      </header>
-      <div id="myListBody" style="padding:14px"></div>
-    </section>
 
     <div class="divider"></div>
     <div class="footer">前端：GitHub Pages．後端：Google Apps Script．</div>
@@ -223,33 +213,12 @@
       finally{ btn.disabled=false; btn.textContent='送出評分'; }
     }
 
-    // === 我的評分總覽 ===
-    function renderMyList(items){
-      const box=$('#myList'), body=$('#myListBody');
-      if(!items.length){ body.innerHTML='<div class="muted">尚無評分紀錄</div>'; box.style.display=''; return; }
-      const rows=items.map(it=>{
-        const ts=it.updatedAt?new Date(it.updatedAt).toLocaleString('zh-TW'):'';
-        return `<tr>
-          <td>${it.projectId}</td><td>${it.team||''}</td>
-          <td style="text-align:right">${it.total||''}</td>
-          <td>${ts}</td>
-          <td><button data-pid="${it.projectId}">檢視</button></td></tr>`;
-      }).join('');
-      body.innerHTML=`<table><thead><tr><th>報名編號</th><th>隊伍名稱</th><th>總分</th><th>最後更新</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table>`;
-      box.style.display='';
-      body.querySelectorAll('button[data-pid]').forEach(btn=>{
-        btn.addEventListener('click',()=>{ const pid=btn.getAttribute('data-pid'); const sel=$('#project'); [...sel.options].forEach(opt=>{ if(!opt.value) return; const p=JSON.parse(opt.value); if(String(p.id)===String(pid)){ sel.value=opt.value; resetScores(); loadLast().catch(()=>{}); } }); });
-      });
-    }
-    async function loadMyScores(){ const res=await apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`); renderMyList(res.items||[]); }
-
     // 事件
     els.forEach(el=> el.addEventListener('input', liveTotal));
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     // 切換團隊時，重置所有分數與意見，避免沿用上一隊的值
     document.getElementById('project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
-    document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
 
     // 啟動
     liveTotal();
