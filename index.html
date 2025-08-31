@@ -40,7 +40,7 @@
 <body>
   <div class="wrap">
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub">輸入 0–100 分，系統會依權重即時計算總分。</div>
+    <div class="sub">請使用專屬連結（例如 <span class="pill">?judge=黃煥 教授</span>）。輸入 0–100 分，系統會依權重即時計算總分。</div>
 
     <div class="row">
       <label for="project">評分團隊</label>
@@ -55,7 +55,7 @@
     <section class="block" id="secI">
       <header>
         <h3>一、產品創新與行銷 <span class="badge">30%</span></h3>
-        <span class="muted">各7.5%</span>
+        <span class="muted">I1~I4 各 7.5%</span>
       </header>
       <div class="grid">
         <label for="I1">面對市場的問題是真正的痛點嗎</label><input type="number" id="I1" min="0" max="100" value="0">
@@ -69,7 +69,7 @@
     <section class="block" id="secM">
       <header>
         <h3>二、市場需求與規模 <span class="badge">30%</span></h3>
-        <span class="muted">各7.5%</span>
+        <span class="muted">M1~M4 各 7.5%</span>
       </header>
       <div class="grid">
         <label for="M1">市場規模合理性與成長性</label><input type="number" id="M1" min="0" max="100" value="0">
@@ -83,7 +83,7 @@
     <section class="block" id="secT">
       <header>
         <h3>三、技術門檻 <span class="badge">20%</span></h3>
-        <span class="muted">各10%</span>
+        <span class="muted">T1 10%・T2 10%</span>
       </header>
       <div class="grid">
         <label for="T1">企業與競爭對手相比有哪些優勢</label><input type="number" id="T1" min="0" max="100" value="0">
@@ -95,7 +95,7 @@
     <section class="block" id="secF">
       <header>
         <h3>四、財務狀況 <span class="badge">10%</span></h3>
-        <span class="muted">各約3.3%</span>
+        <span class="muted">F1 3.3%・F2 3.3%・F3 3.4%</span>
       </header>
       <div class="grid">
         <label for="F1">企業過去財務績效</label><input type="number" id="F1" min="0" max="100" value="0">
@@ -108,7 +108,7 @@
     <section class="block" id="secE">
       <header>
         <h3>五、經營團隊 <span class="badge">10%</span></h3>
-        <span class="muted">各5%</span>
+        <span class="muted">E1 5%・E2 5%</span>
       </header>
       <div class="grid">
         <label for="E1">團隊實力</label><input type="number" id="E1" min="0" max="100" value="0">
@@ -143,6 +143,7 @@
 
     const IDS = ['I1','I2','I3','I4','M1','M2','M3','M4','T1','T2','F1','F2','F3','E1','E2'];
     const els = IDS.map(id=>document.getElementById(id));
+    let DIRTY = false; // 是否有未送出的變更
 
     function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; }
     function liveTotal(){ let t=0; els.forEach(el=>{const v=Number(el.value||0); if(!isNaN(v)) t += v * (W[el.id]||0);}); $('#liveTotal').textContent=t.toFixed(2); return t; }
@@ -184,9 +185,18 @@
       if(!map) return;
       for(const id of IDS){
         const el = document.getElementById(id);
-        const v = map[id] ?? 0; // 後端若以 I-…/M-… 命名，可再加對映
+        const v = map[id] ?? 0;
         el.value = v;
       }
+      liveTotal();
+    }
+
+    // 草稿：讀取/套用/保存
+    function readScores(){ const s={}; els.forEach(el=> s[el.id] = Number(el.value||0)); return s; }
+    function applyScores(s){ if(!s) return; for(const id of IDS){ if(s[id]!=null){ document.getElementById(id).value = s[id]; } } liveTotal(); }
+    function draftKey(){ const p=getSelectedProject(); return `GISA:draft:${JUDGE||'__anon__'}:${p?p.id:'__none__'}`; }
+    function saveDraft(){ try{ const data={scores:readScores(), comment:$('#comment').value, ts:Date.now()}; localStorage.setItem(draftKey(), JSON.stringify(data)); }catch(e){} }
+    function loadDraftForCurrent(){ try{ const raw=localStorage.getItem(draftKey()); if(!raw) return false; const d=JSON.parse(raw); applyScores(d.scores); $('#comment').value=d.comment||''; toast('已載入草稿'); return true; }catch(e){ return false; } }
       liveTotal();
     }
 
@@ -194,6 +204,11 @@
       const p = getSelectedProject(); if(!p) return toast('請先選擇團隊', false);
       const data = await apiGET(`action=last&judge=${encodeURIComponent(JUDGE)}&projectId=${encodeURIComponent(p.id)}`);
       if(!data || !data.items){ toast('沒有上一筆評分'); resetScores(); return; }
+      fillScores(data.items); $('#comment').value = data.comment || '';
+      // 將載入的上一筆也存成草稿，方便誤關頁面時保留
+      saveDraft(); DIRTY = false;
+      toast('已載入前一次評分');
+    }
       fillScores(data.items); $('#comment').value = data.comment || ''; toast('已載入前一次評分');
     }
 
@@ -210,6 +225,8 @@
         const res = await apiPOST(body);
         toast(`已送出，總分 ${res.total?.toFixed?res.total.toFixed(2):res.total}`);
         p.hasScore = true; $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
+        // 清除草稿與未送出狀態
+        localStorage.removeItem(draftKey()); DIRTY = false;
       }catch(e){ toast(e.message||'送出失敗', false); }
       finally{ btn.disabled=false; btn.textContent='送出評分'; }
     }
@@ -219,12 +236,22 @@
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     $('#btnRefresh').addEventListener('click', (e)=>{ e.preventDefault(); loadInit().catch(()=>{}); });
-    // 切換團隊時，重置所有分數與意見，避免沿用上一隊的值
-    document.getElementById('project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
+    // 切換團隊：優先載入草稿，無草稿則重置
+    document.getElementById('project').addEventListener('change', ()=>{
+      if(!loadDraftForCurrent()){ resetScores(); toast('已切換團隊，請輸入新分數'); }
+      DIRTY = false; // 剛載入／剛重置，不視為未送出
+    }); toast('已切換團隊，請輸入新分數'); });
+
+    // 事件：任一輸入變更 → 即時計分＋保存草稿
+    els.forEach(el=> el.addEventListener('input', ()=>{ liveTotal(); DIRTY=true; saveDraft(); }));
+    document.getElementById('comment').addEventListener('input', ()=>{ DIRTY=true; saveDraft(); });
+    $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
+    $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
+    $('#btnRefresh').addEventListener('click', (e)=>{ e.preventDefault(); loadInit().catch(()=>{}); });
+
+    // 離開前提示：若有未送出變更
+    window.addEventListener('beforeunload', (e)=>{ if(!DIRTY) return; e.preventDefault(); e.returnValue=''; });
 
     // 啟動
     liveTotal();
     loadInit().catch(e=> toast(e.message||'初始化失敗', false));
-  </script>
-</body>
-</html>
