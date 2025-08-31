@@ -247,34 +247,71 @@
     function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
     function getSelectedProject(){ const v=$('#project').value; if(!v) return null; return JSON.parse(v); }
 
-    async function save(){
-      const p = getSelectedProject(); const btn=$('#btnSave');
-      if(!p) return toast('請先選擇團隊', false);
-      const scores={}; els.forEach(el=>{ const n=Number(el.value||0); if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100'); scores[el.id]=n; });
-      const body = { action:'save', data: JSON.stringify({ judge:JUDGE, projectId:p.id, team:p.team, vendor:p.vendor||'', scores, comment:$('#comment').value.trim() }) };
-      btn.disabled=true; btn.textContent='送出中…';
-      try{
-        const res = await apiPOST(body);
-        toast(`已送出，總分 ${res.total?.toFixed?res.total.toFixed(2):res.total}`);
-        // 標記這隊為已評分
-        p.hasScore = true; $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
+  async function save(){
+    const p = getSelectedProject(); 
+    const btn = $('#btnSave');
+    if(!p) return toast('請先選擇團隊', false);
 
-        // 若總覽已開啟，送出後順便刷新列表
-        if ($('#myList').style.display !== 'none') {
-          loadMyScores().catch(()=>{});
-        }
+    // 蒐集分數並檢核
+    const scores = {};
+    els.forEach(el=>{
+      const n = Number(el.value||0);
+      if(isNaN(n) || n<0 || n>100) throw new Error('每項需為 0~100');
+      scores[el.id] = n;
+    });
 
-        // 檢查是否所有隊伍皆已評分 → 自動開啟總覽
-        if (allProjectsScored()) {
-          openReviewModal(); // 自動彈出
-        }
-      }catch(e){
-        toast(e.message||'送出失敗', false);
-      }finally{
-        btn.disabled=false; btn.textContent='送出評分';
+    // 組 payload（保持你現在用 JSONP 的做法）
+    const body = {
+      action: 'save',
+      data: JSON.stringify({
+        judge: JUDGE,
+        projectId: p.id,
+        team: p.team,
+        vendor: p.vendor || '',
+        scores,
+        comment: $('#comment').value.trim()
+      })
+    };
+
+    btn.disabled = true; 
+    btn.textContent = '送出中…';
+
+    try{
+      const res = await apiPOST(body);
+
+      // 關鍵：嚴格檢查是否成功且有 total
+      if (!res || res.ok === false) {
+        throw new Error(res?.error || '後端回應失敗');
       }
-    }
+      if (typeof res.total !== 'number' || isNaN(res.total)) {
+        throw new Error('後端未回傳有效總分');
+      }
 
+      const totalText = res.total.toFixed(2);
+      toast(`已送出，總分 ${totalText}`);
+
+      // 標記此隊已評分，更新下拉顯示
+      p.hasScore = true;
+      $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
+
+      // 如果「我的評分總覽」有打開，刷新列表
+      if ($('#myList').style.display !== 'none') {
+        loadMyScores().catch(()=>{});
+      }
+
+      // 若所有隊伍都已評，彈出總覽 Modal
+      if (allProjectsScored()) {
+        openReviewModal();
+      }
+    }catch(e){
+      toast(e.message || '送出失敗', false);
+      // 若要檢查實際回傳內容，可暫時開啟：
+      // console.log('save() error detail:', e);
+    }finally{
+      btn.disabled = false; 
+      btn.textContent = '送出評分';
+    }
+  }
     // 判斷是否所有隊伍都有 hasScore=true
     function allProjectsScored(){
       const sel = $('#project');
