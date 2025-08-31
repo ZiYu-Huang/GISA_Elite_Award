@@ -122,7 +122,8 @@
 
   <script>
     /* ========== 需替換：你的 GAS Web App URL ========== */
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec
+';
 
     /* 權重（與畫面說明一致） */
     const W = { P1:.10, P2:.15, P3:.10, B1:.15, B2:.10, B3:.10, D1:.10, D2:.10, G1:.05, G2:.05 };
@@ -155,14 +156,20 @@
       return r.json();
     }
     async function apiPOST(body){
+      // 以 FormData 傳送，避免 CORS 預檢（OPTIONS）
+      const fd = new FormData();
+      for (const k in body) {
+        const v = body[k];
+        fd.append(k, (typeof v === 'object') ? JSON.stringify(v) : v);
+      }
       let r;
       try{
-        r = await fetch(API_URL, { method:'POST', /* 避免 CORS 預檢：不送 application/json */ headers:{'Content-Type':'text/plain'}, body: JSON.stringify(body) });
+        r = await fetch(API_URL, { method:'POST', body: fd });
       }catch(err){
         throw new Error('無法連線到後端（網路或權限問題）。');
       }
       if(!r.ok){
-        let txt = await r.text().catch(()=> '');
+        const txt = await r.text().catch(()=> '');
         throw new Error(`後端回應錯誤 ${r.status}${txt? '｜'+txt.slice(0,120):''}`);
       }
       return r.json();
