@@ -40,7 +40,7 @@
 <body>
   <div class="wrap">
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub">請使用專屬連結（例如 <span class="pill"></span>）。輸入 0–100 分，系統會依權重即時計算總分。</div>
+    <div class="sub">請使用專屬連結<span class="pill"></span>。輸入 0–100 分，系統會依權重即時計算總分。</div>
 
     <div class="row">
       <label for="project">評分團隊</label>
@@ -55,7 +55,7 @@
     <section class="block" id="secI">
       <header>
         <h3>一、產品創新與行銷 <span class="badge">30%</span></h3>
-        <span class="muted">各 7.5%</span>
+        <span class="muted">各7.5%</span>
       </header>
       <div class="grid">
         <label for="I1">面對市場的問題是真正的痛點嗎</label><input type="number" id="I1" min="0" max="100" value="0">
@@ -69,7 +69,7 @@
     <section class="block" id="secM">
       <header>
         <h3>二、市場需求與規模 <span class="badge">30%</span></h3>
-        <span class="muted">各 7.5%</span>
+        <span class="muted">各7.5%</span>
       </header>
       <div class="grid">
         <label for="M1">市場規模合理性與成長性</label><input type="number" id="M1" min="0" max="100" value="0">
@@ -83,7 +83,7 @@
     <section class="block" id="secT">
       <header>
         <h3>三、技術門檻 <span class="badge">20%</span></h3>
-        <span class="muted">各 10%</span>
+        <span class="muted">各10%</span>
       </header>
       <div class="grid">
         <label for="T1">企業與競爭對手相比有哪些優勢</label><input type="number" id="T1" min="0" max="100" value="0">
@@ -95,7 +95,7 @@
     <section class="block" id="secF">
       <header>
         <h3>四、財務狀況 <span class="badge">10%</span></h3>
-        <span class="muted">各約 3.3%</span>
+        <span class="muted">各約3.3%</span>
       </header>
       <div class="grid">
         <label for="F1">企業過去財務績效</label><input type="number" id="F1" min="0" max="100" value="0">
@@ -108,7 +108,7 @@
     <section class="block" id="secE">
       <header>
         <h3>五、經營團隊 <span class="badge">10%</span></h3>
-        <span class="muted">各  5%</span>
+        <span class="muted">各5%</span>
       </header>
       <div class="grid">
         <label for="E1">團隊實力</label><input type="number" id="E1" min="0" max="100" value="0">
@@ -219,6 +219,8 @@
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     $('#btnRefresh').addEventListener('click', (e)=>{ e.preventDefault(); loadInit().catch(()=>{}); });
+    // 切換團隊時，重置所有分數與意見，避免沿用上一隊的值
+    document.getElementById('project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
 
     // 啟動
     liveTotal();
