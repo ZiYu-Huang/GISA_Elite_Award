@@ -203,19 +203,57 @@
     function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
     function getSelectedProject(){ const v=$('#project').value; if(!v) return null; return JSON.parse(v); }
 
-    async function save(){
-      const p = getSelectedProject(); const btn=$('#btnSave');
-      if(!p) return toast('請先選擇團隊', false);
-      const scores={}; els.forEach(el=>{ const n=Number(el.value||0); if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100'); scores[el.id]=n; });
-      const body = { action:'save', data: JSON.stringify({ judge:JUDGE, projectId:p.id, team:p.team, vendor:p.vendor||'', scores, comment:$('#comment').value.trim() }) };
-      btn.disabled=true; btn.textContent='送出中…';
-      try{
-        const res = await apiPOST(body);
-        toast(`已送出，總分 ${res.total?.toFixed?res.total.toFixed(2):res.total}`);
-        p.hasScore = true; $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
-      }catch(e){ toast(e.message||'送出失敗', false); }
-      finally{ btn.disabled=false; btn.textContent='送出評分'; }
+async function save(){
+  const p = getSelectedProject(); const btn=$('#btnSave');
+  if(!p) return toast('請先選擇團隊', false);
+
+  // 收集分數
+  const scores={};
+  els.forEach(el=>{
+    const n=Number(el.value||0);
+    if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100');
+    scores[el.id]=n;
+  });
+
+  // 組請求
+  const body = {
+    action:'save',
+    data: JSON.stringify({
+      judge:JUDGE,
+      projectId:p.id,
+      team:p.team,
+      vendor:p.vendor||'',
+      scores,
+      comment:$('#comment').value.trim()
+    })
+  };
+
+  btn.disabled=true; btn.textContent='送出中…';
+  try{
+    const res = await apiPOST(body);
+    // 1) 先看 ok
+    if (!res || res.ok === false) {
+      throw new Error(res?.error || '後端回傳失敗');
     }
+    // 2) 確認 total 為數字
+    const total = Number(res.total);
+    if (!Number.isFinite(total)) {
+      throw new Error('後端未回傳總分（total）。請檢查 GAS 的 save_ 是否有 return { ok:true, total }，以及表頭欄名是否完全一致。');
+    }
+
+    toast(`已送出，總分 ${total.toFixed(2)}`);
+    // 下拉顯示「已評分」
+    p.hasScore = true;
+    $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
+  }catch(e){
+    toast(e.message || '送出失敗', false);
+    // 想看更多除錯細節可開啟：
+    // console.error('save error:', e);
+  }finally{
+    btn.disabled=false; btn.textContent='送出評分';
+  }
+}
+
 
     // ===== 我的評分總覽（前端渲染＋事件） =====
     function renderMyList(items){
