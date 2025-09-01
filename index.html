@@ -55,6 +55,7 @@
       <select id="project"></select>
       <button id="btnLast">取得前一次評分紀錄</button>
       <button id="btnList">查看我的評分</button>
+      <button id="btnFinal">送出最終確認</button>
       <span class="hint">（請輸入 0～100，滿分 100）</span>
       <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
     </div>
@@ -145,8 +146,44 @@
 
     <div class="divider"></div>
     <div class="footer">前端：GitHub Pages．後端：Google Apps Script．</div>
+    <!-- 確認彈窗 -->
+    <div id="finalModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:9999;">
+      <div style="width:min(960px,90vw);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 20px 40px rgba(0,0,0,.2);">
+        <header style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="margin:0;font-size:16px">最終確認 — 我打的所有分數</h3>
+          <button id="finalClose" class="ghost" style="padding:6px 10px">關閉</button>
+        </header>
+        <div style="padding:14px 16px">
+          <div id="finalHint" class="muted" style="margin-bottom:8px"></div>
+          <div id="finalTableWrap" style="overflow:auto;border:1px solid #e5e7eb;border-radius:10px">
+            <table style="width:100%;border-collapse:collapse">
+              <thead>
+                <tr>
+                  <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">報名編號</th>
+                  <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">隊伍名稱</th>
+                  <th style="text-align:right;border-bottom:1px solid #e5e7eb;padding:8px">總分</th>
+                  <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">最後更新</th>
+                </tr>
+              </thead>
+              <tbody id="finalTbody"></tbody>
+            </table>
+          </div>
+          <div style="margin-top:12px">
+            <label style="display:flex;gap:8px;align-items:flex-start">
+              <input type="checkbox" id="finalCheck">
+              <span>我已核對上表內容，<b>確認這是我最終要送出的分數</b>。</span>
+            </label>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+            <button id="finalSubmit" class="primary">送出最終確認</button>
+          </div>
+          <div id="finalMsg" class="muted" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
   </div>
-
+  
+  
   <script>
     /* 你的 GAS Web App URL（/exec） */
     const API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec';
@@ -328,6 +365,74 @@ async function save(){
       const res = await apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`);
       renderMyList(res.items || []);
     }
+  // 取全部隊伍數（用 init 的回傳）
+  async function fetchAllProjectsCount(){
+    const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
+    return (d.projects || []).length;
+  }
+  
+  // 打開最終確認彈窗、載入清單
+  async function openFinalModal(){
+    const modal = document.getElementById('finalModal');
+    const tbody = document.getElementById('finalTbody');
+    const hint  = document.getElementById('finalHint');
+    const msg   = document.getElementById('finalMsg');
+    const chk   = document.getElementById('finalCheck');
+  
+    msg.textContent = '';
+    chk.checked = false;
+    tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">讀取中…</td></tr>';
+    modal.style.display = 'flex';
+  
+    const [listRes, totalCount] = await Promise.all([
+      apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
+      fetchAllProjectsCount()
+    ]);
+    const items = listRes.items || [];
+  
+    if (!items.length){
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">尚無評分紀錄</td></tr>';
+    }else{
+      tbody.innerHTML = items.map(it=>{
+        const time = it.updatedAt ? new Date(it.updatedAt) : null;
+        const timeStr = time ? time.toLocaleString('zh-TW') : '';
+        const totalStr = (it.total!==undefined && it.total!==null) ? Number(it.total).toFixed(2) : '';
+        return `<tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.projectId}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.team||''}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right">${totalStr}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${timeStr}</td>
+        </tr>`;
+      }).join('');
+    }
+  
+    hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出最終確認）' : ''}`;
+    document.getElementById('finalSubmit').disabled = (items.length < totalCount);
+  }
+  
+  // 送出最終確認（後端 action=confirm）
+  async function submitFinalConfirm(){
+    const chk = document.getElementById('finalCheck');
+    const msg = document.getElementById('finalMsg');
+    if(!chk.checked){
+      msg.textContent = '請先勾選確認聲明。';
+      msg.style.color = '#b91c1c';
+      return;
+    }
+    msg.textContent = '送出中…';
+    msg.style.color = '#6b7280';
+  
+    try{
+      const res = await apiPOST({ action:'confirm', data: JSON.stringify({ judge: JUDGE }) });
+      if (!res || res.ok === false) throw new Error(res?.error || '後端回傳失敗');
+      msg.textContent = '已完成最終確認！';
+      msg.style.color = '#059669';
+    }catch(e){
+      msg.textContent = e.message || '送出失敗';
+      msg.style.color = '#b91c1c';
+    }
+  }
+
 
     // 事件
     els.forEach(el=> el.addEventListener('input', liveTotal));
@@ -336,6 +441,10 @@ async function save(){
     document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
     // 切換團隊時清空
     document.getElementById('project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
+    document.getElementById('btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
+    document.getElementById('finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
+    document.getElementById('finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
+
 
     // 啟動
     liveTotal();
