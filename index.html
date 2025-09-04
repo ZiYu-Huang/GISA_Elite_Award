@@ -48,7 +48,7 @@
     </div>
 
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub">輸入 0–100 分，系統會依權重即時計算總分。</div>
+    <div class="sub">每個欄位均輸入 0–100 分，系統會依權重即時計算總分。</div>
 
     <div class="row">
       <label for="project">評分團隊</label>
@@ -221,7 +221,7 @@
 
     async function loadInit(){
       const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
-      $('#title').textContent = JUDGE? `${JUDGE} 評分表` : '評分系統（未帶入評審姓名）';
+      $('#title').textContent = JUDGE? `${JUDGE} 評選委員` : '評分系統（未帶入評審姓名）';
       const sel = $('#project'); sel.innerHTML='';
       if(!d.projects?.length){ sel.innerHTML = '<option value="">（尚無隊伍）</option>'; return; }
       d.projects.forEach(p=>{ const opt=document.createElement('option'); opt.value=JSON.stringify(p); opt.textContent=buildProjectOptionText(p); sel.appendChild(opt); });
