@@ -48,15 +48,15 @@
     </div>
 
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub">每個欄位均輸入 0–100 分，系統會依權重即時計算總分。</div>
+    <div class="sub"><span class="hint">每個欄位均輸入 0–100 分，系統會依權重即時計算總分。</div></span>
 
     <div class="row">
-      <label for="project">評分團隊</label>
+      <label for="project">受評公司</label>
       <select id="project"></select>
-      <button id="btnLast">取得前一次評分紀錄</button>
-      <button id="btnList">查看我的評分</button>
-      <button id="btnFinal">送出最終確認</button>
-      <span class="hint">（請輸入 0～100，滿分 100）</span>
+      <button id="btnLast">查看評分</button>
+      <button id="btnList">查看所有公司評分</button>
+      <button id="btnFinal">20家成績最終確認</button>
+<!--       <span class="hint">（請輸入 0～100，滿分 100）</span> -->
       <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
     </div>
 
@@ -175,7 +175,7 @@
             </label>
           </div>
           <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-            <button id="finalSubmit" class="primary">送出最終確認</button>
+            <button id="finalSubmit" class="primary">送出20家成績最終確認</button>
           </div>
           <div id="finalMsg" class="muted" style="margin-top:8px"></div>
         </div>
@@ -406,11 +406,11 @@ async function save(){
       }).join('');
     }
   
-    hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出最終確認）' : ''}`;
+    hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
     document.getElementById('finalSubmit').disabled = (items.length < totalCount);
   }
   
-  // 送出最終確認（後端 action=confirm）
+  // 送出20家成績最終確認（後端 action=confirm）
   async function submitFinalConfirm(){
     const chk = document.getElementById('finalCheck');
     const msg = document.getElementById('finalMsg');
