@@ -55,7 +55,7 @@
       <select id="project"></select>
       <button id="btnLast">查看評分</button>
       <button id="btnList">查看所有公司評分</button>
-      <button id="btnFinal">20家成績最終確認</button>
+      <button id="btnFinal"><span class="hint">20家成績最終確認</button></span>
 <!--       <span class="hint">（請輸入 0～100，滿分 100）</span> -->
       <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
     </div>
@@ -171,7 +171,7 @@
           <div style="margin-top:12px">
             <label style="display:flex;gap:8px;align-items:flex-start">
               <input type="checkbox" id="finalCheck">
-              <span>我已核對上表內容，<b>確認這是我最終要送出的分數</b>。</span>
+              <span>我已核對上表內容，<b>確認這是我最終要送出的分數</b><span class="hint">(注意：送出後無法修改)。</span></span>
             </label>
           </div>
           <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
