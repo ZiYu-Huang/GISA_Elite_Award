@@ -491,4 +491,28 @@
         msg.style.color = '#b91c1c';
         return;
       }
-      msg.textContent = '送
+      msg.textContent = '送出中…';
+      msg.style.color = '#6b7280';
+      try{
+        const res = await apiPOST({ action:'confirm', data: JSON.stringify({ judge: JUDGE }) });
+        if (!res || res.ok === false) throw new Error(res?.error || '後端回傳失敗');
+        msg.textContent = '已完成最終確認！';
+        msg.style.color = '#059669';
+      }catch(e){
+        msg.textContent = e.message || '送出失敗';
+        msg.style.color = '#b91c1c';
+      }
+    }
+    els.forEach(el=> el.addEventListener('input', liveTotal));
+    $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
+    $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
+    document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
+    document.getElementById('project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
+    document.getElementById('btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
+    document.getElementById('finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
+    document.getElementById('finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
+    liveTotal();
+    loadInit().catch(e=> toast(e.message||'初始化失敗', false));
+  </script>
+</body>
+</html>
