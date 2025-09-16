@@ -8,7 +8,23 @@
     :root{ --bg:#f6f7fb;--card:#fff;--muted:#6b7280;--primary:#1f2937;--border:#e5e7eb;--accent:#fff59d; }
     *{box-sizing:border-box}
     body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans TC",sans-serif;background:var(--bg);color:#111827}
-    .wrap{max-width:1024px;margin:42px auto;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.06)}
+
+    /* 滿版 HERO */
+    .hero{
+      width:100%;
+      min-height:min(40vh, 420px);
+      aspect-ratio: 16 / 6;
+      background:#000 url('https://startup.sme.gov.tw/home/upload/event/20250715040629wvp.jpg') center/cover no-repeat;
+    }
+
+    /* 卡片 */
+    .wrap{
+      max-width:1024px;
+      margin:max(-56px,-6vh) auto 42px; /* 微浮到 hero 裡 */
+      padding:24px;background:var(--card);border:1px solid var(--border);
+      border-radius:16px;box-shadow:0 20px 50px rgba(0,0,0,.2)
+    }
+
     h1{margin:0 0 8px 0;font-size:24px}
     .sub{color:var(--muted);font-size:14px;margin-bottom:16px}
     .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
@@ -24,8 +40,13 @@
     .block{border:1px solid var(--border);border-radius:14px;margin:18px 0;overflow:hidden}
     .block>header{display:flex;justify-content:space-between;align-items:center;background:var(--accent);padding:10px 14px;border-bottom:1px solid #facc15}
     .block>header h3{margin:0;font-size:16px}
-    .grid{display:grid;grid-template-columns: 1fr 140px 1fr 140px;gap:12px;padding:14px}
+
+    /* 取代原本固定欄寬，做響應式 */
+    .grid{display:grid;gap:12px;padding:14px;grid-template-columns:1fr;}
+    @media (min-width:640px){ .grid{grid-template-columns:1fr 180px;} }
+    @media (min-width:992px){ .grid{grid-template-columns:1fr 140px 1fr 140px;} }
     .grid label{align-self:center}
+
     textarea{width:100%;min-height:100px}
     .muted{color:var(--muted)}
     .msg{margin-left:8px}
@@ -39,24 +60,19 @@
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <!-- 頂端 Banner 圖片 -->
-    <div style="text-align:center; margin-bottom:20px;">
-      <img src="https://startup.sme.gov.tw/home/upload/event/20250715040629wvp.jpg" 
-           alt="2025創櫃菁英選拔會" 
-           style="max-width:100%; height:auto; border-radius:12px;" />
-    </div>
+  <!-- 滿版 HERO（滿寬頂圖） -->
+  <section class="hero" aria-label="2025創櫃菁英選拔會"></section>
 
+  <div class="wrap">
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub"><span class="hint">每個欄位均輸入 0–100 分，系統會依權重即時計算總分。</div></span>
+    <div class="sub"><span class="hint">每個欄位均輸入 0–100 分</span>，系統會依權重即時計算總分。</div>
 
     <div class="row">
       <label for="project">受評公司</label>
       <select id="project"></select>
       <button id="btnLast">查看評分</button>
       <button id="btnList">查看所有公司評分</button>
-      <button id="btnFinal"><span class="hint">20家成績最終確認</button></span>
-<!--       <span class="hint">（請輸入 0～100，滿分 100）</span> -->
+      <button id="btnFinal" class="primary">20家成績最終確認</button>
       <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
     </div>
 
@@ -146,7 +162,8 @@
 
     <div class="divider"></div>
     <div class="footer">前端：GitHub Pages．後端：Google Apps Script．</div>
-    <!-- 確認彈窗 -->
+
+    <!-- 最終確認彈窗 -->
     <div id="finalModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:9999;">
       <div style="width:min(960px,90vw);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 20px 40px rgba(0,0,0,.2);">
         <header style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
@@ -182,8 +199,7 @@
       </div>
     </div>
   </div>
-  
-  
+
   <script>
     /* 你的 GAS Web App URL（/exec） */
     const API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec';
@@ -247,57 +263,50 @@
     function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
     function getSelectedProject(){ const v=$('#project').value; if(!v) return null; return JSON.parse(v); }
 
-async function save(){
-  const p = getSelectedProject(); const btn=$('#btnSave');
-  if(!p) return toast('請先選擇團隊', false);
+    async function save(){
+      const p = getSelectedProject(); const btn=$('#btnSave');
+      if(!p) return toast('請先選擇團隊', false);
 
-  // 收集分數
-  const scores={};
-  els.forEach(el=>{
-    const n=Number(el.value||0);
-    if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100');
-    scores[el.id]=n;
-  });
+      // 收集分數
+      const scores={};
+      els.forEach(el=>{
+        const n=Number(el.value||0);
+        if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100');
+        scores[el.id]=n;
+      });
 
-  // 組請求
-  const body = {
-    action:'save',
-    data: JSON.stringify({
-      judge:JUDGE,
-      projectId:p.id,
-      team:p.team,
-      vendor:p.vendor||'',
-      scores,
-      comment:$('#comment').value.trim()
-    })
-  };
+      // 組請求
+      const body = {
+        action:'save',
+        data: JSON.stringify({
+          judge:JUDGE,
+          projectId:p.id,
+          team:p.team,
+          vendor:p.vendor||'',
+          scores,
+          comment:$('#comment').value.trim()
+        })
+      };
 
-  btn.disabled=true; btn.textContent='送出中…';
-  try{
-    const res = await apiPOST(body);
-    // 1) 先看 ok
-    if (!res || res.ok === false) {
-      throw new Error(res?.error || '後端回傳失敗');
+      btn.disabled=true; btn.textContent='送出中…';
+      try{
+        const res = await apiPOST(body);
+        if (!res || res.ok === false) {
+          throw new Error(res?.error || '後端回傳失敗');
+        }
+        const total = Number(res.total);
+        if (!Number.isFinite(total)) {
+          throw new Error('後端未回傳總分（total）。請檢查 GAS 的 save_ 是否有 return { ok:true, total }，以及表頭欄名是否完全一致。');
+        }
+        toast(`已送出，總分 ${total.toFixed(2)}`);
+        p.hasScore = true;
+        $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
+      }catch(e){
+        toast(e.message || '送出失敗', false);
+      }finally{
+        btn.disabled=false; btn.textContent='送出評分';
+      }
     }
-    // 2) 確認 total 為數字
-    const total = Number(res.total);
-    if (!Number.isFinite(total)) {
-      throw new Error('後端未回傳總分（total）。請檢查 GAS 的 save_ 是否有 return { ok:true, total }，以及表頭欄名是否完全一致。');
-    }
-
-    toast(`已送出，總分 ${total.toFixed(2)}`);
-    // 下拉顯示「已評分」
-    p.hasScore = true;
-    $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
-  }catch(e){
-    toast(e.message || '送出失敗', false);
-    // 想看更多除錯細節可開啟：
-    // console.error('save error:', e);
-  }finally{
-    btn.disabled=false; btn.textContent='送出評分';
-  }
-}
-
 
     // ===== 我的評分總覽（前端渲染＋事件） =====
     function renderMyList(items){
@@ -365,86 +374,84 @@ async function save(){
       const res = await apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`);
       renderMyList(res.items || []);
     }
-  // 取全部隊伍數（用 init 的回傳）
-  async function fetchAllProjectsCount(){
-    const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
-    return (d.projects || []).length;
-  }
-  
-  // 打開最終確認彈窗、載入清單
-  async function openFinalModal(){
-    const modal = document.getElementById('finalModal');
-    const tbody = document.getElementById('finalTbody');
-    const hint  = document.getElementById('finalHint');
-    const msg   = document.getElementById('finalMsg');
-    const chk   = document.getElementById('finalCheck');
-  
-    msg.textContent = '';
-    chk.checked = false;
-    tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">讀取中…</td></tr>';
-    modal.style.display = 'flex';
-  
-    const [listRes, totalCount] = await Promise.all([
-      apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
-      fetchAllProjectsCount()
-    ]);
-    const items = listRes.items || [];
-  
-    if (!items.length){
-      tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">尚無評分紀錄</td></tr>';
-    }else{
-      tbody.innerHTML = items.map(it=>{
-        const time = it.updatedAt ? new Date(it.updatedAt) : null;
-        const timeStr = time ? time.toLocaleString('zh-TW') : '';
-        const totalStr = (it.total!==undefined && it.total!==null) ? Number(it.total).toFixed(2) : '';
-        return `<tr>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.projectId}</td>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.team||''}</td>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right">${totalStr}</td>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${timeStr}</td>
-        </tr>`;
-      }).join('');
-    }
-  
-    hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
-    document.getElementById('finalSubmit').disabled = (items.length < totalCount);
-  }
-  
-  // 送出20家成績最終確認（後端 action=confirm）
-  async function submitFinalConfirm(){
-    const chk = document.getElementById('finalCheck');
-    const msg = document.getElementById('finalMsg');
-    if(!chk.checked){
-      msg.textContent = '請先勾選確認聲明。';
-      msg.style.color = '#b91c1c';
-      return;
-    }
-    msg.textContent = '送出中…';
-    msg.style.color = '#6b7280';
-  
-    try{
-      const res = await apiPOST({ action:'confirm', data: JSON.stringify({ judge: JUDGE }) });
-      if (!res || res.ok === false) throw new Error(res?.error || '後端回傳失敗');
-      msg.textContent = '已完成最終確認！';
-      msg.style.color = '#059669';
-    }catch(e){
-      msg.textContent = e.message || '送出失敗';
-      msg.style.color = '#b91c1c';
-    }
-  }
 
+    // 取全部隊伍數（用 init 的回傳）
+    async function fetchAllProjectsCount(){
+      const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
+      return (d.projects || []).length;
+    }
+
+    // 打開最終確認彈窗、載入清單
+    async function openFinalModal(){
+      const modal = document.getElementById('finalModal');
+      const tbody = document.getElementById('finalTbody');
+      const hint  = document.getElementById('finalHint');
+      const msg   = document.getElementById('finalMsg');
+      const chk   = document.getElementById('finalCheck');
+
+      msg.textContent = '';
+      chk.checked = false;
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">讀取中…</td></tr>';
+      modal.style.display = 'flex';
+
+      const [listRes, totalCount] = await Promise.all([
+        apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
+        fetchAllProjectsCount()
+      ]);
+      const items = listRes.items || [];
+
+      if (!items.length){
+        tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">尚無評分紀錄</td></tr>';
+      }else{
+        tbody.innerHTML = items.map(it=>{
+          const time = it.updatedAt ? new Date(it.updatedAt) : null;
+          const timeStr = time ? time.toLocaleString('zh-TW') : '';
+          const totalStr = (it.total!==undefined && it.total!==null) ? Number(it.total).toFixed(2) : '';
+          return `<tr>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.projectId}</td>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.team||''}</td>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right">${totalStr}</td>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb">${timeStr}</td>
+          </tr>`;
+        }).join('');
+      }
+
+      hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
+      document.getElementById('finalSubmit').disabled = (items.length < totalCount);
+    }
+
+    // 送出20家成績最終確認（後端 action=confirm）
+    async function submitFinalConfirm(){
+      const chk = document.getElementById('finalCheck');
+      const msg = document.getElementById('finalMsg');
+      if(!chk.checked){
+        msg.textContent = '請先勾選確認聲明。';
+        msg.style.color = '#b91c1c';
+        return;
+      }
+      msg.textContent = '送出中…';
+      msg.style.color = '#6b7280';
+
+      try{
+        const res = await apiPOST({ action:'confirm', data: JSON.stringify({ judge: JUDGE }) });
+        if (!res || res.ok === false) throw new Error(res?.error || '後端回傳失敗');
+        msg.textContent = '已完成最終確認！';
+        msg.style.color = '#059669';
+      }catch(e){
+        msg.textContent = e.message || '送出失敗';
+        msg.style.color = '#b91c1c';
+      }
+    }
 
     // 事件
     els.forEach(el=> el.addEventListener('input', liveTotal));
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
-    // 切換團隊時清空
     document.getElementById('project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
     document.getElementById('btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
     document.getElementById('finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
     document.getElementById('finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
-
 
     // 啟動
     liveTotal();
