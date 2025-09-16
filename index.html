@@ -5,19 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>評分系統（五構面版）</title>
   <style>
-    /* 🎨 優化配色：將黃色改為淺灰藍 */
     :root{ 
       --bg: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #e0f2fe 100%);
       --card: #fff;
       --muted: #6b7280;
       --primary: #1e3a8a;
       --border: #e5e7eb;
-      --accent: #eceff1;  /* 淺灰藍取代黃色 */
-      --accent-border: #b0bec5;  /* 對應的邊框色 */
+      --accent: #eceff1;
+      --accent-border: #b0bec5;
     }
-    
     *{box-sizing:border-box}
-    
     body{
       margin:0;
       font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans TC",sans-serif;
@@ -26,7 +23,6 @@
       color:#111827;
       min-height: 100vh;
     }
-    
     body::before {
       content: '';
       position: fixed;
@@ -40,34 +36,14 @@
       pointer-events: none;
       z-index: -1;
     }
-    
-    .banner-hero {
-      width: 100%;
-      text-align: center;
-      margin: 20px 0 40px 0;
-      position: relative;
-      z-index: 1;
-    }
-    
-    .banner-hero img {
-      max-width: min(1024px, 90%);
-      height: auto;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      border: 2px solid rgba(255,255,255,0.1);
-    }
-    
+    .banner-hero { width: 100%; text-align: center; margin: 20px 0 40px 0; position: relative; z-index: 1; }
+    .banner-hero img { max-width: min(1024px, 90%); height: auto; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.1); }
     .wrap{
-      max-width:1024px;
-      margin: 0 auto 42px auto;
-      padding:24px;
+      max-width:1024px; margin: 0 auto 42px auto; padding:24px;
       background: rgba(255,255,255,0.95);
-      border:1px solid rgba(255,255,255,0.2);
-      border-radius:16px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-      backdrop-filter: blur(10px);
+      border:1px solid rgba(255,255,255,0.2); border-radius:16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1); backdrop-filter: blur(10px);
     }
-    
     h1{margin:0 0 8px 0;font-size:24px;color:var(--primary);}
     .sub{color:var(--muted);font-size:14px;margin-bottom:16px}
     .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
@@ -78,81 +54,40 @@
     button{cursor:pointer}
     button.primary{background:var(--primary);color:#fff}
     .hint{color:#b91c1c;font-weight:700}
-    
-    /* 🎨 評分顯示框：新的優雅配色 */
     .scoreBox{
-      margin-left:auto;
-      background: var(--accent);
-      padding:10px 14px;
-      border-radius:10px;
-      border:1px solid var(--accent-border);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-left:auto;background: var(--accent);padding:10px 14px;border-radius:10px;border:1px solid var(--accent-border);box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     .scoreBox b{font-size:18px;color:var(--primary);}
-    
     .block{border:1px solid var(--border);border-radius:14px;margin:18px 0;overflow:hidden}
-    
-    /* 🎨 評分區塊標題：新的優雅配色 */
-    .block>header{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      background: var(--accent);
-      padding:10px 14px;
-      border-bottom:1px solid var(--accent-border);
-    }
+    .block>header{display:flex;justify-content:space-between;align-items:center;background: var(--accent);padding:10px 14px;border-bottom:1px solid var(--accent-border);}
     .block>header h3{margin:0;font-size:16px;color:var(--primary);}
-    
     .grid{display:grid;grid-template-columns: 1fr 140px;gap:12px;padding:14px}
     .grid label{align-self:center}
     textarea{width:100%;min-height:100px}
     .muted{color:var(--muted)}
     .msg{margin-left:8px}
     .pill{padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;font-size:12px}
-    
-    /* 🎨 徽章：改為更優雅的配色 */
-    .badge{
-      padding:2px 8px;
-      border-radius:6px;
-      border:1px solid var(--accent-border);
-      background: var(--accent);
-      color: var(--primary);
-      font-size:12px;
-      font-weight: 600;
-    }
-    
+    .badge{ padding:2px 8px;border-radius:6px;border:1px solid var(--accent-border);background: var(--accent);color: var(--primary);font-size:12px;font-weight: 600; }
     .footer{margin-top:8px;color:var(--muted);font-size:12px}
     .divider{height:1px;background:var(--border);margin:16px 0}
     .link{color:#2563eb;text-decoration:none}
     .link:hover{text-decoration:underline}
     table th, table td{padding:6px 4px}
-    
     @media (max-width: 1024px) {
-      .banner-hero {
-        margin: 10px 0 30px 0;
-      }
-      
-      .banner-hero img {
-        max-width: 95%;
-        border-radius: 12px;
-      }
-      
-      .wrap {
-        margin: 0 20px 30px 20px;
-        padding: 20px;
-      }
+      .banner-hero { margin: 10px 0 30px 0; }
+      .banner-hero img { max-width: 95%; border-radius: 12px; }
+      .wrap { margin: 0 20px 30px 20px; padding: 20px; }
     }
   </style>
 </head>
 <body>
   <div class="banner-hero">
-    <img src="https://startup.sme.gov.tw/home/upload/event/20250715040629wvp.jpg"
-         alt="2025創櫃菁英選拔會" />
+    <img src="https://startup.sme.gov.tw/home/upload/event/20250715040629wvp.jpg" alt="2025創櫃菁英選拔會" />
   </div>
 
   <div class="wrap">
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub"><span class="hint">每個構面均輸入 0–100 分，系統會依權重即時計算總分。</span></div>
+    <div class="sub"><span class="hint">每構面請依滿分區間打分（I/M ≤30；T ≤20；F/E ≤10），總分將即時相加。</span></div>
 
     <div class="row">
       <label for="project">受評公司</label>
@@ -160,56 +95,46 @@
       <button id="btnLast">查看評分</button>
       <button id="btnList">查看所有公司評分</button>
       <button id="btnFinal"><span class="hint">20家成績最終確認</span></button>
-      <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
+      <div class="scoreBox">目前總分：<b id="liveTotal">0.00</b> / 100</div>
     </div>
 
     <section class="block" id="secI">
-      <header>
-        <h3>一、產品創新與行銷 <span class="badge">30%</span></h3>
-      </header>
+      <header><h3>一、產品創新與行銷 <span class="badge">滿分 30</span></h3></header>
       <div class="grid">
         <label for="I">產品創新與行銷整體評分</label>
-        <input type="number" id="I" min="0" max="100" value="0">
+        <input type="number" id="I" min="0" max="30" value="0">
       </div>
     </section>
 
     <section class="block" id="secM">
-      <header>
-        <h3>二、市場需求與規模 <span class="badge">30%</span></h3>
-      </header>
+      <header><h3>二、市場需求與規模 <span class="badge">滿分 30</span></h3></header>
       <div class="grid">
         <label for="M">市場需求與規模整體評分</label>
-        <input type="number" id="M" min="0" max="100" value="0">
+        <input type="number" id="M" min="0" max="30" value="0">
       </div>
     </section>
 
     <section class="block" id="secT">
-      <header>
-        <h3>三、技術門檻 <span class="badge">20%</span></h3>
-      </header>
+      <header><h3>三、技術門檻 <span class="badge">滿分 20</span></h3></header>
       <div class="grid">
         <label for="T">技術門檻整體評分</label>
-        <input type="number" id="T" min="0" max="100" value="0">
+        <input type="number" id="T" min="0" max="20" value="0">
       </div>
     </section>
 
     <section class="block" id="secF">
-      <header>
-        <h3>四、財務狀況 <span class="badge">10%</span></h3>
-      </header>
+      <header><h3>四、財務狀況 <span class="badge">滿分 10</span></h3></header>
       <div class="grid">
         <label for="F">財務狀況整體評分</label>
-        <input type="number" id="F" min="0" max="100" value="0">
+        <input type="number" id="F" min="0" max="10" value="0">
       </div>
     </section>
 
     <section class="block" id="secE">
-      <header>
-        <h3>五、經營團隊 <span class="badge">10%</span></h3>
-      </header>
+      <header><h3>五、經營團隊 <span class="badge">滿分 10</span></h3></header>
       <div class="grid">
         <label for="E">經營團隊整體評分</label>
-        <input type="number" id="E" min="0" max="100" value="0">
+        <input type="number" id="E" min="0" max="10" value="0">
       </div>
     </section>
 
@@ -234,6 +159,7 @@
     <div class="divider"></div>
     <div class="footer">前端：GitHub Pages．後端：Google Apps Script．</div>
 
+    <!-- Final Modal -->
     <div id="finalModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:9999;">
       <div style="width:min(960px,90vw);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 20px 40px rgba(0,0,0,.2);">
         <header style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
@@ -271,39 +197,67 @@
   </div>
 
   <script>
-    //const API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec';
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxYonZdwpJqFYEpwNqci1zpiAk6T7JgtyLeqP3ICRr-w-RukYAKzp_1L1Ngu42x8vhb/exec;
-    const W = { I: 0.30, M: 0.30, T: 0.20, F: 0.10, E: 0.10 };
+    /***** 請把下列 URL 改成你真正的 GAS 部署網址（Web app 的「最新部署」URL） *****/
+    // 例：const API_URL = 'https://script.google.com/macros/s/XXXXXXXX/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxYonZdwpJqFYEpwNqci1zpiAk6T7JgtyLeqP3ICRr-w-RukYAKzp_1L1Ngu42x8vhb/exec';
     const $ = q => document.querySelector(q);
     const params = new URLSearchParams(location.search);
     const JUDGE = decodeURIComponent(params.get('judge')||'').trim();
+
+    // 構面代碼
     const IDS = ['I', 'M', 'T', 'F', 'E'];
+    const MAX = { I:30, M:30, T:20, F:10, E:10 };
+
     const els = IDS.map(id=>document.getElementById(id));
-    function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; }
-    function liveTotal(){ let t=0; els.forEach(el=>{const v=Number(el.value||0); if(!isNaN(v)) t += v * (W[el.id]||0);}); $('#liveTotal').textContent=t.toFixed(2); return t; }
+
+    function toast(msg, ok=true){
+      const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c';
+    }
+
+    // 即時總分（直接相加）
+    function liveTotal(){
+      let t=0;
+      els.forEach(el=>{
+        const v=Number(el.value||0);
+        if(!isNaN(v)) t += v;
+      });
+      $('#liveTotal').textContent=t.toFixed(2);
+      return t;
+    }
+
     function buildProjectOptionText(p){ return `${p.id}｜${p.team}${p.hasScore?'（已評分）':''}`; }
-    function jsonp(params){
+
+    // JSONP 呼叫（相容 GitHub Pages 跨網域）
+    function jsonp(paramsObj){
       return new Promise((resolve,reject)=>{
         const cb = 'cb_' + Math.random().toString(36).slice(2);
         window[cb] = (data)=>{ resolve(data); cleanup(); };
         const s = document.createElement('script');
-        const qs = new URLSearchParams(params);
+        const qs = new URLSearchParams(paramsObj);
         qs.set('callback', cb);
         s.src = API_URL + (API_URL.includes('?')?'&':'?') + qs.toString();
         s.onerror = ()=>{ reject(new Error('連線失敗（JSONP）')); cleanup(); };
         document.head.appendChild(s);
-        function cleanup(){ delete window[cb]; s.remove(); }
+        function cleanup(){ try{delete window[cb]}catch{}; try{s.remove()}catch{}; }
       });
     }
-    async function apiGET(q){ const params = Object.fromEntries(new URLSearchParams(q)); return jsonp(params); }
-    async function apiPOST(body){ return jsonp(body); }
+
+    async function apiGET(qs){ return jsonp(Object.fromEntries(new URLSearchParams(qs))); }
+    async function apiPOST(body){ return jsonp(body); } // 後端也支援用 doGet JSONP 帶 action=save/confirm
+
     async function loadInit(){
       const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
       $('#title').textContent = JUDGE? `${JUDGE} 評選委員` : '評分系統（未帶入評審姓名）';
       const sel = $('#project'); sel.innerHTML='';
       if(!d.projects?.length){ sel.innerHTML = '<option value="">（尚無隊伍）</option>'; return; }
-      d.projects.forEach(p=>{ const opt=document.createElement('option'); opt.value=JSON.stringify(p); opt.textContent=buildProjectOptionText(p); sel.appendChild(opt); });
+      d.projects.forEach(p=>{
+        const opt=document.createElement('option');
+        opt.value=JSON.stringify(p);
+        opt.textContent=buildProjectOptionText(p);
+        sel.appendChild(opt);
+      });
     }
+
     function fillScores(map){
       if(!map) return;
       for(const id of IDS){
@@ -313,23 +267,39 @@
       }
       liveTotal();
     }
+
     async function loadLast(){
-      const p = getSelectedProject(); if(!p) return toast('請先選擇團隊', false);
+      const p = getSelectedProject();
+      if(!p) return toast('請先選擇團隊', false);
       const data = await apiGET(`action=last&judge=${encodeURIComponent(JUDGE)}&projectId=${encodeURIComponent(p.id)}`);
       if(!data || !data.items){ toast('沒有上一筆評分'); resetScores(); return; }
-      fillScores(data.items); $('#comment').value = data.comment || ''; toast('已載入前一次評分');
+      fillScores(data.items);
+      $('#comment').value = data.comment || '';
+      toast('已載入前一次評分');
     }
+
     function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
     function getSelectedProject(){ const v=$('#project').value; if(!v) return null; return JSON.parse(v); }
+
     async function save(){
-      const p = getSelectedProject(); const btn=$('#btnSave');
+      const p = getSelectedProject();
+      const btn=$('#btnSave');
+      if(!JUDGE){ toast('URL 未帶入 judge=評審姓名', false); return; }
       if(!p) return toast('請先選擇團隊', false);
+
+      // 前端區間驗證（配合後端 I/M ≤30；T ≤20；F/E ≤10）
       const scores={};
-      els.forEach(el=>{
-        const n=Number(el.value||0);
-        if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100');
-        scores[el.id]=n;
-      });
+      for(const id of IDS){
+        const el = document.getElementById(id);
+        const n = Number(el.value||0);
+        const hi = MAX[id];
+        if(Number.isNaN(n) || n<0 || n>hi){
+          el.focus();
+          throw new Error(`${id} 構面分數需介於 0~${hi}`);
+        }
+        scores[id]=n;
+      }
+
       const body = {
         action:'save',
         data: JSON.stringify({
@@ -341,25 +311,30 @@
           comment:$('#comment').value.trim()
         })
       };
+
       btn.disabled=true; btn.textContent='送出中…';
       try{
         const res = await apiPOST(body);
-        if (!res || res.ok === false) {
-          throw new Error(res?.error || '後端回傳失敗');
-        }
+        if (!res || res.ok === false) throw new Error(res?.error || '後端回傳失敗');
+
         const total = Number(res.total);
-        if (!Number.isFinite(total)) {
-          throw new Error('後端未回傳總分（total）。請檢查 GAS 的 save_ 是否有 return { ok:true, total }，以及表頭欄名是否完全一致。');
-        }
+        if (!Number.isFinite(total)) throw new Error('後端未回傳總分（total）。');
+
         toast(`已送出，總分 ${total.toFixed(2)}`);
         p.hasScore = true;
-        $('#project').selectedOptions.textContent = buildProjectOptionText(p);
+
+        // 修正：更新目前選項的顯示文字
+        const sel = $('#project');
+        const opt = sel.options[sel.selectedIndex];
+        if (opt) opt.textContent = buildProjectOptionText(p);
+
       }catch(e){
         toast(e.message || '送出失敗', false);
       }finally{
         btn.disabled=false; btn.textContent='送出評分';
       }
     }
+
     function renderMyList(items){
       const box = document.getElementById('myList');
       const body = document.getElementById('myListBody');
@@ -371,11 +346,12 @@
       const rows = items.map(it=>{
         const time = it.updatedAt ? new Date(it.updatedAt) : null;
         const timeStr = time ? time.toLocaleString('zh-TW') : '';
+        const totalStr = (it.total!==undefined && it.total!==null) ? Number(it.total).toFixed(2) : '';
         return `
           <tr>
             <td>${it.projectId}</td>
             <td>${it.team||''}</td>
-            <td style="text-align:right">${(it.total??'').toString()}</td>
+            <td style="text-align:right">${totalStr}</td>
             <td>${timeStr}</td>
             <td><button class="ghost" data-pid="${it.projectId}">檢視</button></td>
           </tr>`;
@@ -419,14 +395,17 @@
         });
       });
     }
+
     async function loadMyScores(){
       const res = await apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`);
       renderMyList(res.items || []);
     }
+
     async function fetchAllProjectsCount(){
       const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
       return (d.projects || []).length;
     }
+
     async function openFinalModal(){
       const modal = document.getElementById('finalModal');
       const tbody = document.getElementById('finalTbody');
@@ -460,6 +439,7 @@
       hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
       document.getElementById('finalSubmit').disabled = (items.length < totalCount);
     }
+
     async function submitFinalConfirm(){
       const chk = document.getElementById('finalCheck');
       const msg = document.getElementById('finalMsg');
@@ -480,7 +460,20 @@
         msg.style.color = '#b91c1c';
       }
     }
-    els.forEach(el=> el.addEventListener('input', liveTotal));
+
+    // 綁定事件
+    els.forEach(el=>{
+      // 限制輸入不超過各構面上限（UX 保護）
+      el.addEventListener('input', ()=>{
+        const max = MAX[el.id];
+        let v = Number(el.value||0);
+        if (v < 0) v = 0;
+        if (v > max) v = max;
+        el.value = v;
+        liveTotal();
+      });
+    });
+
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
@@ -488,6 +481,8 @@
     document.getElementById('btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
     document.getElementById('finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
     document.getElementById('finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
+
+    // 初始化
     liveTotal();
     loadInit().catch(e=> toast(e.message||'初始化失敗', false));
   </script>
