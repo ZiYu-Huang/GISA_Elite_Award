@@ -352,7 +352,7 @@
         }
         toast(`已送出，總分 ${total.toFixed(2)}`);
         p.hasScore = true;
-        $('#project').selectedOptions.textContent = buildProjectOptionText(p);
+        $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
       }catch(e){
         toast(e.message || '送出失敗', false);
       }finally{
@@ -374,8 +374,8 @@
           <tr>
             <td>${it.projectId}</td>
             <td>${it.team||''}</td>
-            <td>${timeStr}</td>
             <td style="text-align:right">${(it.total??'').toString()}</td>
+            <td>${timeStr}</td>
             <td><button class="ghost" data-pid="${it.projectId}">檢視</button></td>
           </tr>`;
       }).join('');
@@ -386,8 +386,8 @@
               <tr>
                 <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">報名編號</th>
                 <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">隊伍名稱</th>
-                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">最後更新</th>
                 <th style="text-align:right;border-bottom:1px solid var(--border); padding:6px 4px">總分</th>
+                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">最後更新</th>
                 <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">操作</th>
               </tr>
             </thead>
