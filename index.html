@@ -5,11 +5,56 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>評分系統（五構面版）</title>
   <style>
-    :root{ --bg:#f6f7fb;--card:#fff;--muted:#6b7280;--primary:#1f2937;--border:#e5e7eb;--accent:#fff59d; }
+    /* 保持您原有的變數但調整為官方風格 */
+    :root{ 
+      --bg: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #e0f2fe 100%);
+      --card: rgba(255, 255, 255, 0.95);
+      --muted: #6b7280;
+      --primary: #1e3a8a;
+      --border: #e5e7eb;
+      --accent: #fef3c7; 
+    }
+    
+    /* 您原有的所有CSS，僅修改背景部分 */
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans TC",sans-serif;background:var(--bg);color:#111827}
-    .wrap{max-width:1024px;margin:42px auto;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.06)}
-    h1{margin:0 0 8px 0;font-size:24px}
+    
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans TC",sans-serif;
+      background: var(--bg);
+      background-attachment: fixed;
+      color:#111827;
+      min-height: 100vh;
+    }
+    
+    /* 添加背景裝飾元素 */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: 
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(30, 58, 138, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(147, 197, 253, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    .wrap{
+      max-width:1024px;
+      margin:42px auto;
+      padding:24px;
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.2);
+      border-radius:16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+    }
+    
+    h1{margin:0 0 8px 0;font-size:24px;color:var(--primary);}
     .sub{color:var(--muted);font-size:14px;margin-bottom:16px}
     .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
     label{font-weight:600}
@@ -17,11 +62,11 @@
     select,input{min-width:120px}
     input[type=number]{width:110px}
     button{cursor:pointer}
-    button.primary{background:#111827;color:#fff}
+    button.primary{background:var(--primary);color:#fff}
     .hint{color:#b91c1c;font-weight:700}
     .scoreBox{margin-left:auto;background:var(--accent);padding:10px 14px;border-radius:10px;border:1px solid #facc15}
     .scoreBox b{font-size:18px}
-    .block{border:1px solid var(--border);border-radius:14px;margin:18px 0;overflow:hidden}
+    .block{border:1px solid var(--border);border-radius:14px;margin:18px 0;overflow:hidden;background:rgba(255,255,255,0.8);}
     .block>header{display:flex;justify-content:space-between;align-items:center;background:var(--accent);padding:10px 14px;border-bottom:1px solid #facc15}
     .block>header h3{margin:0;font-size:16px}
     .grid{display:grid;grid-template-columns: 1fr 140px 1fr 140px;gap:12px;padding:14px}
@@ -36,6 +81,61 @@
     .link{color:#2563eb;text-decoration:none}
     .link:hover{text-decoration:underline}
     table th, table td{padding:6px 4px}
+    
+    /* 頂部橫幅區域優化 */
+    .banner-area {
+      text-align: center;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    
+    .banner-area img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+    
+    /* 官方風格裝飾 */
+    .official-header {
+      background: linear-gradient(135deg, var(--primary), #3b82f6);
+      color: white;
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .official-header::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255,255,255,0.05) 10px,
+        rgba(255,255,255,0.05) 20px
+      );
+      animation: shine 20s linear infinite;
+    }
+    
+    @keyframes shine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    .official-header h1 {
+      margin: 0;
+      position: relative;
+      z-index: 1;
+      color: white;
+    }
   </style>
 </head>
 <body>
