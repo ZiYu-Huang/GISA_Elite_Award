@@ -5,1179 +5,417 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>評分系統（五構面版）</title>
   <style>
-    /* CSS 變數優化 */
-    :root {
-      --bg: #f6f7fb;
-      --card: #fff;
-      --muted: #6b7280;
-      --primary: #1f2937;
-      --border: #e5e7eb;
-      --accent: #fff59d;
-      --success: #059669;
-      --error: #b91c1c;
-      --warning: #92400e;
-      --shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
-      --radius: 10px;
-      --radius-lg: 16px;
-    }
-
-    /* 基礎重置和字體 */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, "Noto Sans TC", sans-serif;
-      background: var(--bg);
-      color: #111827;
-      line-height: 1.5;
-    }
-
-    /* 主容器 */
-    .wrap {
-      max-width: 1024px;
-      margin: 42px auto;
-      padding: 24px;
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-lg);
-      box-shadow: var(--shadow);
-    }
-
-    /* 標題區域 */
-    .header-section {
-      text-align: center;
-      margin-bottom: 32px;
-    }
-
-    .banner-img {
-      max-width: 100%;
-      height: auto;
-      border-radius: 12px;
-      margin-bottom: 20px;
-    }
-
-    h1 {
-      font-size: 28px;
-      margin-bottom: 8px;
-      color: var(--primary);
-    }
-
-    .subtitle {
-      color: var(--muted);
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-
-    /* 控制面板 */
-    .control-panel {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 24px;
-      padding: 16px;
-      background: #f9fafb;
-      border-radius: var(--radius);
-      border: 1px solid var(--border);
-    }
-
-    /* 表單元素 */
-    label {
-      font-weight: 600;
-      color: var(--primary);
-      white-space: nowrap;
-    }
-
-    select, input, textarea, button {
-      font-size: 16px;
-      padding: 10px 12px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: #fff;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    select:focus, input:focus, textarea:focus {
-      outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-    }
-
-    select, input {
-      min-width: 120px;
-    }
-
-    input[type="number"] {
-      width: 110px;
-    }
-
-    /* 按鈕樣式 */
-    button {
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-
-    button:hover {
-      transform: translateY(-1px);
-    }
-
-    button:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    button.primary {
-      background: var(--primary);
-      color: #fff;
-    }
-
-    button.primary:hover:not(:disabled) {
-      background: #374151;
-    }
-
-    button.danger {
-      background: var(--error);
-      color: #fff;
-    }
-
-    button.danger:hover:not(:disabled) {
-      background: #991b1b;
-    }
-
-    /* 分數顯示 */
-    .score-display {
-      background: var(--accent);
-      padding: 12px 16px;
-      border-radius: var(--radius);
-      border: 2px solid #facc15;
-      font-weight: 600;
-      text-align: center;
-      grid-column: span 2;
-    }
-
-    .score-display .score-value {
-      font-size: 24px;
-      color: var(--primary);
-    }
-
-    /* 評分區塊 */
-    .scoring-section {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin: 24px 0;
-      overflow: hidden;
-      transition: box-shadow 0.2s;
-    }
-
-    .scoring-section:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--accent);
-      padding: 14px 16px;
-      border-bottom: 1px solid #facc15;
-    }
-
-    .section-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--primary);
-    }
-
-    .section-grid {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 16px;
-      padding: 16px;
-      align-items: center;
-    }
-
-    @media (min-width: 768px) {
-      .section-grid {
-        grid-template-columns: 1fr 120px 1fr 120px;
-      }
-    }
-
-    /* 評論區域 */
-    .comment-section {
-      margin: 24px 0;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 100px;
-      resize: vertical;
-    }
-
-    /* 提示和狀態 */
-    .hint {
-      color: var(--error);
-      font-weight: 700;
-    }
-
-    .success {
-      color: var(--success);
-    }
-
-    .muted {
-      color: var(--muted);
-    }
-
-    /* 徽章和標籤 */
-    .badge {
-      padding: 4px 12px;
-      border-radius: 999px;
-      background: #fffbeb;
-      color: var(--warning);
-      border: 1px solid #fde68a;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    /* 列表區域 */
-    .list-section {
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      margin: 24px 0;
-      overflow: hidden;
-      display: none;
-    }
-
-    .list-section.show {
-      display: block;
-    }
-
-    /* 表格樣式 */
-    .table-container {
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    th, td {
-      padding: 12px 8px;
-      text-align: left;
-      border-bottom: 1px solid var(--border);
-    }
-
-    th {
-      background: #f9fafb;
-      font-weight: 600;
-      color: var(--primary);
-    }
-
-    tbody tr:hover {
-      background: #f9fafb;
-    }
-
-    /* 模態框 */
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-
-    .modal.show {
-      display: flex;
-    }
-
-    .modal-content {
-      width: min(960px, 90vw);
-      max-height: 80vh;
-      overflow: auto;
-      background: #fff;
-      border-radius: 14px;
-      border: 1px solid var(--border);
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #f9fafb;
-    }
-
-    .modal-body {
-      padding: 20px;
-    }
-
-    /* 載入狀態 */
-    .loading {
-      opacity: 0.6;
-      pointer-events: none;
-    }
-
-    /* 動畫 */
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .animate-in {
-      animation: slideIn 0.3s ease-out;
-    }
-
-    /* 響應式調整 */
-    @media (max-width: 768px) {
-      .wrap {
-        margin: 20px;
-        padding: 16px;
-      }
-
-      .control-panel {
-        grid-template-columns: 1fr;
-      }
-
-      .score-display {
-        grid-column: span 1;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-    }
-
-    /* 頁尾 */
-    .footer {
-      margin-top: 32px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-      color: var(--muted);
-      font-size: 12px;
-      text-align: center;
-    }
+    :root{ --bg:#f6f7fb;--card:#fff;--muted:#6b7280;--primary:#1f2937;--border:#e5e7eb;--accent:#fff59d; }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,"Noto Sans TC",sans-serif;background:var(--bg);color:#111827}
+    .wrap{max-width:1024px;margin:42px auto;padding:24px;background:var(--card);border:1px solid var(--border);border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,.06)}
+    h1{margin:0 0 8px 0;font-size:24px}
+    .sub{color:var(--muted);font-size:14px;margin-bottom:16px}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
+    label{font-weight:600}
+    select,input,textarea,button{font-size:16px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff}
+    select,input{min-width:120px}
+    input[type=number]{width:110px}
+    button{cursor:pointer}
+    button.primary{background:#111827;color:#fff}
+    .hint{color:#b91c1c;font-weight:700}
+    .scoreBox{margin-left:auto;background:var(--accent);padding:10px 14px;border-radius:10px;border:1px solid #facc15}
+    .scoreBox b{font-size:18px}
+    .block{border:1px solid var(--border);border-radius:14px;margin:18px 0;overflow:hidden}
+    .block>header{display:flex;justify-content:space-between;align-items:center;background:var(--accent);padding:10px 14px;border-bottom:1px solid #facc15}
+    .block>header h3{margin:0;font-size:16px}
+    .grid{display:grid;grid-template-columns: 1fr 140px 1fr 140px;gap:12px;padding:14px}
+    .grid label{align-self:center}
+    textarea{width:100%;min-height:100px}
+    .muted{color:var(--muted)}
+    .msg{margin-left:8px}
+    .pill{padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;font-size:12px}
+    .badge{padding:2px 8px;border-radius:6px;border:1px solid #fde68a;background:#fffbeb;color:#92400e;font-size:12px}
+    .footer{margin-top:8px;color:var(--muted);font-size:12px}
+    .divider{height:1px;background:var(--border);margin:16px 0}
+    .link{color:#2563eb;text-decoration:none}
+    .link:hover{text-decoration:underline}
+    table th, table td{padding:6px 4px}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <!-- 標題區域 -->
-    <header class="header-section animate-in">
-      <img src="https://startup.sme.gov.tw/home/upload/event/20250715040629wvp.jpg"
-           alt="2025創櫃菁英選拔會"
-           class="banner-img" />
-      <h1 id="title">評分系統（五構面版）</h1>
-      <div class="subtitle">
-        <span class="hint">每個欄位均輸入 0–100 分，系統會依權重即時計算總分</span>
-      </div>
-    </header>
-
-    <!-- 控制面板 -->
-    <section class="control-panel">
+    <!-- 頂端 Banner 圖片 -->
+    <div style="text-align:center; margin-bottom:20px;">
+      <img src="https://startup.sme.gov.tw/home/upload/event/20250715040629wvp.jpg" 
+           alt="2025創櫃菁英選拔會" 
+           style="max-width:100%; height:auto; border-radius:12px;" />
+    </div>
+<h1 id="title">評分系統（五構面版）</h1>
+    <div class="sub"><span class="hint">每個欄位均輸入 0–100 分，系統會依權重即時計算總分。</div></span>
+<div class="row">
       <label for="project">受評公司</label>
-      <select id="project" aria-label="選擇受評公司">
-        <option value="">請選擇公司...</option>
-      </select>
-      
-      <button id="btnLast" type="button">查看評分</button>
-      <button id="btnList" type="button">查看所有公司評分</button>
-      <button id="btnFinal" class="danger" type="button">
-        <span class="hint">20家成績最終確認</span>
-      </button>
-      
-      <div class="score-display">
-        即時得分：<span class="score-value" id="liveTotal">0.00</span>
+      <select id="project"></select>
+      <button id="btnLast">查看評分</button>
+      <button id="btnList">查看所有公司評分</button>
+      <button id="btnFinal"><span class="hint">20家成績最終確認</button></span>
+<!--       <span class="hint">（請輸入 0～100，滿分 100）</span> -->
+      <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
+    </div>
+<!-- 1) 產品創新與行銷 30% -->
+    <section class="block" id="secI">
+      <header>
+        <h3>一、產品創新與行銷 <span class="badge">30%</span></h3>
+        <span class="muted">各7.5%</span>
+      </header>
+      <div class="grid">
+        <label for="I1">面對市場的問題是真正的痛點嗎</label><input type="number" id="I1" min="0" max="100" value="0">
+        <label for="I2">產品解決痛點的效果如何</label><input type="number" id="I2" min="0" max="100" value="0">
+        <label for="I3">市場行銷策略可行性</label><input type="number" id="I3" min="0" max="100" value="0">
+        <label for="I4">業務是否可擴展</label><input type="number" id="I4" min="0" max="100" value="0">
       </div>
     </section>
-
-    <!-- 評分區域 -->
-    <main>
-      <!-- 1) 產品創新與行銷 30% -->
-      <section class="scoring-section animate-in" id="secI">
-        <header class="section-header">
-          <h3 class="section-title">一、產品創新與行銷 <span class="badge">30%</span></h3>
-          <span class="muted">各7.5%</span>
-        </header>
-        <div class="section-grid">
-          <label for="I1">面對市場的問題是真正的痛點嗎</label>
-          <input type="number" id="I1" min="0" max="100" value="0" aria-label="痛點評分">
-          <label for="I2">產品解決痛點的效果如何</label>
-          <input type="number" id="I2" min="0" max="100" value="0" aria-label="解決效果評分">
-          <label for="I3">市場行銷策略可行性</label>
-          <input type="number" id="I3" min="0" max="100" value="0" aria-label="行銷策略評分">
-          <label for="I4">業務是否可擴展</label>
-          <input type="number" id="I4" min="0" max="100" value="0" aria-label="擴展性評分">
-        </div>
-      </section>
-
-      <!-- 2) 市場需求與規模 30% -->
-      <section class="scoring-section animate-in" id="secM">
-        <header class="section-header">
-          <h3 class="section-title">二、市場需求與規模 <span class="badge">30%</span></h3>
-          <span class="muted">各7.5%</span>
-        </header>
-        <div class="section-grid">
-          <label for="M1">市場規模合理性與成長性</label>
-          <input type="number" id="M1" min="0" max="100" value="0" aria-label="市場規模評分">
-          <label for="M2">目標市場對象是否合宜</label>
-          <input type="number" id="M2" min="0" max="100" value="0" aria-label="目標市場評分">
-          <label for="M3">企業收入/客戶穩定性與持續性</label>
-          <input type="number" id="M3" min="0" max="100" value="0" aria-label="穩定性評分">
-          <label for="M4">企業發展速度有多快</label>
-          <input type="number" id="M4" min="0" max="100" value="0" aria-label="發展速度評分">
-        </div>
-      </section>
-
-      <!-- 3) 技術門檻 20% -->
-      <section class="scoring-section animate-in" id="secT">
-        <header class="section-header">
-          <h3 class="section-title">三、技術門檻 <span class="badge">20%</span></h3>
-          <span class="muted">各10%</span>
-        </header>
-        <div class="section-grid">
-          <label for="T1">企業與競爭對手相比有哪些優勢</label>
-          <input type="number" id="T1" min="0" max="100" value="0" aria-label="競爭優勢評分">
-          <label for="T2">進入門檻有多高</label>
-          <input type="number" id="T2" min="0" max="100" value="0" aria-label="進入門檻評分">
-        </div>
-      </section>
-
-      <!-- 4) 財務狀況 10% -->
-      <section class="scoring-section animate-in" id="secF">
-        <header class="section-header">
-          <h3 class="section-title">四、財務狀況 <span class="badge">10%</span></h3>
-          <span class="muted">各約3.3%</span>
-        </header>
-        <div class="section-grid">
-          <label for="F1">企業過去財務績效</label>
-          <input type="number" id="F1" min="0" max="100" value="0" aria-label="過去績效評分">
-          <label for="F2">企業未來財務規劃</label>
-          <input type="number" id="F2" min="0" max="100" value="0" aria-label="未來規劃評分">
-          <label for="F3">企業是否有強大的創收計畫</label>
-          <input type="number" id="F3" min="0" max="100" value="0" aria-label="創收計畫評分">
-        </div>
-      </section>
-
-      <!-- 5) 經營團隊 10% -->
-      <section class="scoring-section animate-in" id="secE">
-        <header class="section-header">
-          <h3 class="section-title">五、經營團隊 <span class="badge">10%</span></h3>
-          <span class="muted">各5%</span>
-        </header>
-        <div class="section-grid">
-          <label for="E1">團隊實力</label>
-          <input type="number" id="E1" min="0" max="100" value="0" aria-label="團隊實力評分">
-          <label for="E2">團隊成員是否具備合適的背景或工作經驗</label>
-          <input type="number" id="E2" min="0" max="100" value="0" aria-label="團隊背景評分">
-        </div>
-      </section>
-
-      <!-- 評論區域 -->
-      <section class="comment-section">
-        <label for="comment">委員意見</label>
-        <textarea id="comment" maxlength="300" placeholder="可留空，最多 300 字" aria-label="委員意見"></textarea>
-      </section>
-
-      <!-- 提交按鈕 -->
-      <div style="display: flex; gap: 12px; align-items: center; margin: 24px 0;">
-        <button class="primary" id="btnSave" type="button">送出評分</button>
-        <span class="msg muted" id="msg" role="status" aria-live="polite"></span>
+<!-- 2) 市場需求與規模 30% -->
+    <section class="block" id="secM">
+      <header>
+        <h3>二、市場需求與規模 <span class="badge">30%</span></h3>
+        <span class="muted">各7.5%</span>
+      </header>
+      <div class="grid">
+        <label for="M1">市場規模合理性與成長性</label><input type="number" id="M1" min="0" max="100" value="0">
+        <label for="M2">目標市場對象是否合宜</label><input type="number" id="M2" min="0" max="100" value="0">
+        <label for="M3">企業收入/客戶穩定性與持續性</label><input type="number" id="M3" min="0" max="100" value="0">
+        <label for="M4">企業發展速度有多快</label><input type="number" id="M4" min="0" max="100" value="0">
       </div>
-    </main>
-
-    <!-- 我的評分總覽 -->
-    <section class="list-section" id="myList">
-      <header class="section-header">
-        <h3 class="section-title">我的評分總覽</h3>
+    </section>
+<!-- 3) 技術門檻 20% -->
+    <section class="block" id="secT">
+      <header>
+        <h3>三、技術門檻 <span class="badge">20%</span></h3>
+        <span class="muted">各10%</span>
+      </header>
+      <div class="grid">
+        <label for="T1">企業與競爭對手相比有哪些優勢</label><input type="number" id="T1" min="0" max="100" value="0">
+        <label for="T2">進入門檻有多高</label><input type="number" id="T2" min="0" max="100" value="0">
+      </div>
+    </section>
+<!-- 4) 財務狀況 10% -->
+    <section class="block" id="secF">
+      <header>
+        <h3>四、財務狀況 <span class="badge">10%</span></h3>
+        <span class="muted">各約3.3%</span>
+      </header>
+      <div class="grid">
+        <label for="F1">企業過去財務績效</label><input type="number" id="F1" min="0" max="100" value="0">
+        <label for="F2">企業未來財務規劃</label><input type="number" id="F2" min="0" max="100" value="0">
+        <label for="F3">企業是否有強大的創收計畫</label><input type="number" id="F3" min="0" max="100" value="0">
+      </div>
+    </section>
+<!-- 5) 經營團隊 10% -->
+    <section class="block" id="secE">
+      <header>
+        <h3>五、經營團隊 <span class="badge">10%</span></h3>
+        <span class="muted">各5%</span>
+      </header>
+      <div class="grid">
+        <label for="E1">團隊實力</label><input type="number" id="E1" min="0" max="100" value="0">
+        <label for="E2">團隊成員是否具備合適的背景或工作經驗</label><input type="number" id="E2" min="0" max="100" value="0">
+      </div>
+    </section>
+<div class="row">
+      <label for="comment">委員意見</label>
+      <textarea id="comment" maxlength="300" placeholder="（可留空，最多 300 字）"></textarea>
+    </div>
+<div class="row">
+      <button class="primary" id="btnSave">送出評分</button>
+      <span class="msg muted" id="msg"></span>
+    </div>
+<!-- 我的評分總覽（列表） -->
+    <section class="block" id="myList" style="display:none">
+      <header>
+        <h3>我的評分總覽</h3>
         <span class="muted">點「檢視」可切換並載入該隊上一筆評分</span>
       </header>
-      <div id="myListBody" style="padding: 16px;"></div>
+      <div id="myListBody" style="padding:14px"></div>
     </section>
-
-    <!-- 頁尾 -->
-    <footer class="footer">
-      前端：GitHub Pages ．後端：Google Apps Script
-    </footer>
-
-    <!-- 最終確認模態框 -->
-    <div id="finalModal" class="modal">
-      <div class="modal-content">
-        <header class="modal-header">
-          <h3 class="section-title">最終確認 — 我打的所有分數</h3>
-          <button id="finalClose" type="button" aria-label="關閉模態框">✕</button>
+<div class="divider"></div>
+    <div class="footer">前端：GitHub Pages．後端：Google Apps Script．</div>
+    <!-- 確認彈窗 -->
+    <div id="finalModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:9999;">
+      <div style="width:min(960px,90vw);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 20px 40px rgba(0,0,0,.2);">
+        <header style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
+          <h3 style="margin:0;font-size:16px">最終確認 — 我打的所有分數</h3>
+          <button id="finalClose" class="ghost" style="padding:6px 10px">關閉</button>
         </header>
-        <div class="modal-body">
-          <div id="finalHint" class="muted" style="margin-bottom: 16px;"></div>
-          <div class="table-container">
-            <table>
+        <div style="padding:14px 16px">
+          <div id="finalHint" class="muted" style="margin-bottom:8px"></div>
+          <div id="finalTableWrap" style="overflow:auto;border:1px solid #e5e7eb;border-radius:10px">
+            <table style="width:100%;border-collapse:collapse">
               <thead>
                 <tr>
-                  <th>報名編號</th>
-                  <th>隊伍名稱</th>
-                  <th style="text-align: right;">總分</th>
-                  <th>最後更新</th>
+                  <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">報名編號</th>
+                  <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">隊伍名稱</th>
+                  <th style="text-align:right;border-bottom:1px solid #e5e7eb;padding:8px">總分</th>
+                  <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">最後更新</th>
                 </tr>
               </thead>
-              <tbody id="finalTbody">
-                <tr><td colspan="4" style="padding: 20px; text-align: center;">載入中...</td></tr>
-              </tbody>
+              <tbody id="finalTbody"></tbody>
             </table>
           </div>
-          <div style="margin-top: 16px;">
-            <label style="display: flex; gap: 8px; align-items: flex-start;">
+          <div style="margin-top:12px">
+            <label style="display:flex;gap:8px;align-items:flex-start">
               <input type="checkbox" id="finalCheck">
-              <span>我已核對上表內容，<strong>確認這是我最終要送出的分數</strong>
-                <span class="hint">（注意：送出後無法修改）</span>
-              </span>
+              <span>我已核對上表內容，<b>確認這是我最終要送出的分數</b><span class="hint">(注意：送出後無法修改)。</span></span>
             </label>
           </div>
-          <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: flex-end;">
-            <button id="finalSubmit" class="primary" type="button">送出20家成績最終確認</button>
+          <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+            <button id="finalSubmit" class="primary">送出20家成績最終確認</button>
           </div>
-          <div id="finalMsg" class="muted" style="margin-top: 12px;" role="status" aria-live="polite"></div>
+          <div id="finalMsg" class="muted" style="margin-top:8px"></div>
         </div>
       </div>
     </div>
   </div>
-
+  
+  
   <script>
-    // ===== 應用程式配置 =====
-    class ScoringApp {
-      constructor() {
-        this.API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec';
-        this.WEIGHTS = {
-          I1: 0.075, I2: 0.075, I3: 0.075, I4: 0.075,
-          M1: 0.075, M2: 0.075, M3: 0.075, M4: 0.075,
-          T1: 0.10, T2: 0.10,
-          F1: 0.033, F2: 0.033, F3: 0.034,
-          E1: 0.05, E2: 0.05
-        };
-        this.SCORE_IDS = Object.keys(this.WEIGHTS);
-        this.judge = this.getJudgeFromURL();
-        
-        this.init();
-      }
-
-      // ===== 初始化 =====
-      init() {
-        this.bindEvents();
-        this.updateLiveTotal();
-        this.loadInitialData();
-      }
-
-      getJudgeFromURL() {
-        const params = new URLSearchParams(location.search);
-        return decodeURIComponent(params.get('judge') || '').trim();
-      }
-
-      // ===== DOM 操作輔助函數 =====
-      $(selector) {
-        return document.querySelector(selector);
-      }
-
-      $$(selector) {
-        return document.querySelectorAll(selector);
-      }
-
-      // ===== 事件綁定 =====
-      bindEvents() {
-        // 分數輸入事件
-        this.SCORE_IDS.forEach(id => {
-          const input = this.$(`#${id}`);
-          if (input) {
-            input.addEventListener('input', () => this.updateLiveTotal());
-            input.addEventListener('blur', () => this.validateScore(input));
-          }
-        });
-
-        // 按鈕事件
-        this.$('#btnSave')?.addEventListener('click', () => this.saveScore());
-        this.$('#btnLast')?.addEventListener('click', () => this.loadLastScore());
-        this.$('#btnList')?.addEventListener('click', () => this.loadMyScores());
-        this.$('#btnFinal')?.addEventListener('click', () => this.openFinalModal());
-        
-        // 項目選擇變更
-        this.$('#project')?.addEventListener('change', () => this.onProjectChange());
-        
-        // 模態框事件
-        this.$('#finalClose')?.addEventListener('click', () => this.closeFinalModal());
-        this.$('#finalSubmit')?.addEventListener('click', () => this.submitFinalConfirm());
-        
-        // 點擊模態框背景關閉
-        this.$('#finalModal')?.addEventListener('click', (e) => {
-          if (e.target === this.$('#finalModal')) {
-            this.closeFinalModal();
-          }
-        });
-      }
-
-      // ===== 分數驗證 =====
-      validateScore(input) {
-        const value = Number(input.value);
-        if (isNaN(value) || value < 0 || value > 100) {
-          input.style.borderColor = 'var(--error)';
-          this.showMessage('分數必須在 0-100 之間', false);
-        } else {
-          input.style.borderColor = '';
-        }
-      }
-
-      // ===== 即時分數計算 =====
-      updateLiveTotal() {
-        let total = 0;
-        let hasInvalidScore = false;
-
-        this.SCORE_IDS.forEach(id => {
-          const input = this.$(`#${id}`);
-          if (input) {
-            const value = Number(input.value || 0);
-            if (!isNaN(value) && value >= 0 && value <= 100) {
-              total += value * (this.WEIGHTS[id] || 0);
-            } else if (input.value !== '' && input.value !== '0') {
-              hasInvalidScore = true;
-            }
-          }
-        });
-
-        const totalElement = this.$('#liveTotal');
-        if (totalElement) {
-          totalElement.textContent = total.toFixed(2);
-          totalElement.style.color = hasInvalidScore ? 'var(--error)' : 'var(--primary)';
-        }
-
-        return total;
-      }
-
-      // ===== JSONP 通信 =====
-      async jsonp(params) {
-        return new Promise((resolve, reject) => {
-          const callbackName = 'cb_' + Math.random().toString(36).slice(2);
-          
-          window[callbackName] = (data) => {
-            resolve(data);
-            cleanup();
-          };
-
-          const script = document.createElement('script');
-          const queryString = new URLSearchParams(params);
-          queryString.set('callback', callbackName);
-          
-          script.src = this.API_URL + 
-            (this.API_URL.includes('?') ? '&' : '?') + 
-            queryString.toString();
-            
-          script.onerror = () => {
-            reject(new Error('連線失敗'));
-            cleanup();
-          };
-
-          document.head.appendChild(script);
-
-          function cleanup() {
-            delete window[callbackName];
-            script.remove();
-          }
-
-          // 超時處理
-          setTimeout(() => {
-            reject(new Error('請求超時'));
-            cleanup();
-          }, 30000);
-        });
-      }
-
-      async apiGet(params) {
-        return this.jsonp(params);
-      }
-
-      async apiPost(body) {
-        return this.jsonp(body);
-      }
-
-      // ===== 訊息顯示 =====
-      showMessage(message, isSuccess = true) {
-        const msgElement = this.$('#msg');
-        if (msgElement) {
-          msgElement.textContent = message;
-          msgElement.className = `msg ${isSuccess ? 'success' : 'hint'}`;
-        }
-      }
-
-      // ===== 載入初始資料 =====
-      async loadInitialData() {
-        try {
-          this.setLoading(true);
-          
-          const data = await this.apiGet({
-            action: 'init',
-            judge: encodeURIComponent(this.judge)
-          });
-
-          this.updateTitle();
-          this.populateProjectSelect(data.projects || []);
-          
-        } catch (error) {
-          this.showMessage('初始化失敗: ' + error.message, false);
-        } finally {
-          this.setLoading(false);
-        }
-      }
-
-      updateTitle() {
-        const titleElement = this.$('#title');
-        if (titleElement) {
-          titleElement.textContent = this.judge ? 
-            `${this.judge} 評選委員` : 
-            '評分系統（未帶入評審姓名）';
-        }
-      }
-
-      populateProjectSelect(projects) {
-        const select = this.$('#project');
-        if (!select) return;
-
-        select.innerHTML = '<option value="">請選擇公司...</option>';
-        
-        if (!projects.length) {
-          select.innerHTML += '<option value="">（尚無隊伍）</option>';
-          return;
-        }
-
-        projects.forEach(project => {
-          const option = document.createElement('option');
-          option.value = JSON.stringify(project);
-          option.textContent = this.buildProjectOptionText(project);
-          select.appendChild(option);
-        });
-      }
-
-      buildProjectOptionText(project) {
-        return `${project.id}｜${project.team}${project.hasScore ? '（已評分）' : ''}`;
-      }
-
-      // ===== 專案選擇處理 =====
-      onProjectChange() {
-        this.resetScores();
-        this.showMessage('已切換團隊，請輸入新分數');
-      }
-
-      getSelectedProject() {
-        const select = this.$('#project');
-        if (!select || !select.value) return null;
-        
-        try {
-          return JSON.parse(select.value);
-        } catch (error) {
-          return null;
-        }
-      }
-
-      // ===== 分數管理 =====
-      resetScores() {
-        this.SCORE_IDS.forEach(id => {
-          const input = this.$(`#${id}`);
-          if (input) {
-            input.value = '0';
-            input.style.borderColor = '';
-          }
-        });
-        
-        const commentElement = this.$('#comment');
-        if (commentElement) {
-          commentElement.value = '';
-        }
-        
-        this.updateLiveTotal();
-      }
-
-      fillScores(scoreMap) {
-        if (!scoreMap) return;
-        
-        this.SCORE_IDS.forEach(id => {
-          const input = this.$(`#${id}`);
-          if (input) {
-            input.value = scoreMap[id] ?? 0;
-          }
-        });
-        
-        this.updateLiveTotal();
-      }
-
-      collectScores() {
-        const scores = {};
-        let hasError = false;
-
-        this.SCORE_IDS.forEach(id => {
-          const input = this.$(`#${id}`);
-          if (input) {
-            const value = Number(input.value || 0);
-            if (isNaN(value) || value < 0 || value > 100) {
-              hasError = true;
-              input.style.borderColor = 'var(--error)';
-            } else {
-              scores[id] = value;
-              input.style.borderColor = '';
-            }
-          }
-        });
-
-        if (hasError) {
-          throw new Error('請確認所有分數都在 0-100 之間');
-        }
-
-        return scores;
-      }
-
-      // ===== 載入上次評分 =====
-      async loadLastScore() {
-        const project = this.getSelectedProject();
-        if (!project) {
-          this.showMessage('請先選擇團隊', false);
-          return;
-        }
-
-        try {
-          this.setLoading(true);
-          
-          const data = await this.apiGet({
-            action: 'last',
-            judge: encodeURIComponent(this.judge),
-            projectId: encodeURIComponent(project.id)
-          });
-
-          if (!data || !data.items) {
-            this.showMessage('沒有上一筆評分');
-            this.resetScores();
-            return;
-          }
-
-          this.fillScores(data.items);
-          
-          const commentElement = this.$('#comment');
-          if (commentElement) {
-            commentElement.value = data.comment || '';
-          }
-          
-          this.showMessage('已載入前一次評分');
-          
-        } catch (error) {
-          this.showMessage('載入失敗: ' + error.message, false);
-        } finally {
-          this.setLoading(false);
-        }
-      }
-
-      // ===== 儲存評分 =====
-      async saveScore() {
-        const project = this.getSelectedProject();
-        if (!project) {
-          this.showMessage('請先選擇團隊', false);
-          return;
-        }
-
-        try {
-          const scores = this.collectScores();
-          const comment = this.$('#comment')?.value?.trim() || '';
-          
-          const button = this.$('#btnSave');
-          const originalText = button.textContent;
-          
-          button.disabled = true;
-          button.textContent = '送出中...';
-          
-          const requestData = {
-            action: 'save',
-            data: JSON.stringify({
-              judge: this.judge,
-              projectId: project.id,
-              team: project.team,
-              vendor: project.vendor || '',
-              scores,
-              comment
-            })
-          };
-
-          const response = await this.apiPost(requestData);
-
-          if (!response || response.ok === false) {
-            throw new Error(response?.error || '後端回傳失敗');
-          }
-
-          const total = Number(response.total);
-          if (!Number.isFinite(total)) {
-            throw new Error('後端未回傳總分');
-          }
-
-          this.showMessage(`已送出，總分 ${total.toFixed(2)}`);
-          
-          // 更新下拉選單顯示
-          project.hasScore = true;
-          const selectedOption = this.$('#project').selectedOptions;
-          if (selectedOption) {
-            selectedOption.textContent = this.buildProjectOptionText(project);
-          }
-          
-        } catch (error) {
-          this.showMessage(error.message || '送出失敗', false);
-        } finally {
-          const button = this.$('#btnSave');
-          button.disabled = false;
-          button.textContent = '送出評分';
-        }
-      }
-
-      // ===== 載入我的評分列表 =====
-      async loadMyScores() {
-        try {
-          this.setLoading(true);
-          
-          const response = await this.apiGet({
-            action: 'list',
-            judge: encodeURIComponent(this.judge)
-          });
-
-          this.renderMyScoresList(response.items || []);
-          
-        } catch (error) {
-          this.showMessage('載入失敗: ' + error.message, false);
-        } finally {
-          this.setLoading(false);
-        }
-      }
-
-      renderMyScoresList(items) {
-        const listSection = this.$('#myList');
-        const listBody = this.$('#myListBody');
-        
-        if (!items.length) {
-          listBody.innerHTML = '<div class="muted">尚無評分紀錄</div>';
-          listSection.classList.add('show');
-          return;
-        }
-
-        const rows = items.map(item => {
-          const time = item.updatedAt ? new Date(item.updatedAt) : null;
-          const timeStr = time ? time.toLocaleString('zh-TW') : '';
-          const totalStr = (item.total !== undefined && item.total !== null) ? 
-            Number(item.total).toFixed(2) : '';
-
-          return `
-            <tr>
-              <td>${item.projectId}</td>
-              <td>${item.team || ''}</td>
-              <td style="text-align: right;">${totalStr}</td>
-              <td>${timeStr}</td>
-              <td>
-                <button type="button" class="ghost" data-pid="${item.projectId}">檢視</button>
-              </td>
-            </tr>
-          `;
-        }).join('');
-
-        listBody.innerHTML = `
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>報名編號</th>
-                  <th>隊伍名稱</th>
-                  <th style="text-align: right;">總分</th>
-                  <th>最後更新</th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>${rows}</tbody>
-            </table>
-          </div>
-        `;
-
-        // 綁定檢視按鈕事件
-        this.bindViewButtons(listBody);
-        listSection.classList.add('show');
-      }
-
-      bindViewButtons(container) {
-        const buttons = container.querySelectorAll('button[data-pid]');
-        buttons.forEach(button => {
-          button.addEventListener('click', () => {
-            this.switchToProject(button.getAttribute('data-pid'));
-          });
-        });
-      }
-
-      switchToProject(projectId) {
-        const select = this.$('#project');
-        const options = Array.from(select.options);
-        
-        const targetOption = options.find(option => {
-          if (!option.value) return false;
-          try {
-            const project = JSON.parse(option.value);
-            return String(project.id) === String(projectId);
-          } catch {
-            return false;
-          }
-        });
-
-        if (targetOption) {
-          select.value = targetOption.value;
-          this.resetScores();
-          this.loadLastScore();
-          this.showMessage(`已切換至 ${projectId}，並載入上一筆評分`);
-          
-          // 平滑滾動到頂部
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        } else {
-          this.showMessage(`名單中找不到編號 ${projectId}`, false);
-        }
-      }
-
-      // ===== 最終確認模態框 =====
-      async openFinalModal() {
-        const modal = this.$('#finalModal');
-        const tbody = this.$('#finalTbody');
-        const hint = this.$('#finalHint');
-        const msg = this.$('#finalMsg');
-        const checkbox = this.$('#finalCheck');
-
-        // 重置狀態
-        msg.textContent = '';
-        checkbox.checked = false;
-        tbody.innerHTML = '<tr><td colspan="4" style="padding: 20px; text-align: center;">載入中...</td></tr>';
-        
-        modal.classList.add('show');
-
-        try {
-          const [listResponse, totalCount] = await Promise.all([
-            this.apiGet({
-              action: 'list',
-              judge: encodeURIComponent(this.judge)
-            }),
-            this.fetchAllProjectsCount()
-          ]);
-
-          const items = listResponse.items || [];
-          this.renderFinalModalTable(items, totalCount);
-          
-        } catch (error) {
-          tbody.innerHTML = `<tr><td colspan="4" style="padding: 20px; text-align: center; color: var(--error);">載入失敗: ${error.message}</td></tr>`;
-        }
-      }
-
-      async fetchAllProjectsCount() {
-        const data = await this.apiGet({
-          action: 'init',
-          judge: encodeURIComponent(this.judge)
-        });
-        return (data.projects || []).length;
-      }
-
-      renderFinalModalTable(items, totalCount) {
-        const tbody = this.$('#finalTbody');
-        const hint = this.$('#finalHint');
-        const submitButton = this.$('#finalSubmit');
-
-        if (!items.length) {
-          tbody.innerHTML = '<tr><td colspan="4" style="padding: 20px; text-align: center;">尚無評分紀錄</td></tr>';
-        } else {
-          const rows = items.map(item => {
-            const time = item.updatedAt ? new Date(item.updatedAt) : null;
-            const timeStr = time ? time.toLocaleString('zh-TW') : '';
-            const totalStr = (item.total !== undefined && item.total !== null) ? 
-              Number(item.total).toFixed(2) : '';
-
-            return `
-              <tr>
-                <td style="padding: 12px; border-bottom: 1px solid var(--border);">${item.projectId}</td>
-                <td style="padding: 12px; border-bottom: 1px solid var(--border);">${item.team || ''}</td>
-                <td style="padding: 12px; border-bottom: 1px solid var(--border); text-align: right;">${totalStr}</td>
-                <td style="padding: 12px; border-bottom: 1px solid var(--border);">${timeStr}</td>
-              </tr>
-            `;
-          }).join('');
-          
-          tbody.innerHTML = rows;
-        }
-
-        const isComplete = items.length >= totalCount;
-        hint.innerHTML = `已評隊伍數：<strong>${items.length}</strong>／全部隊伍數：<strong>${totalCount}</strong>。${!isComplete ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
-        
-        submitButton.disabled = !isComplete;
-      }
-
-      closeFinalModal() {
-        const modal = this.$('#finalModal');
-        modal.classList.remove('show');
-      }
-
-      async submitFinalConfirm() {
-        const checkbox = this.$('#finalCheck');
-        const msg = this.$('#finalMsg');
-        
-        if (!checkbox.checked) {
-          msg.textContent = '請先勾選確認聲明。';
-          msg.style.color = 'var(--error)';
-          return;
-        }
-
-        msg.textContent = '送出中...';
-        msg.style.color = 'var(--muted)';
-
-        try {
-          const response = await this.apiPost({
-            action: 'confirm',
-            data: JSON.stringify({ judge: this.judge })
-          });
-
-          if (!response || response.ok === false) {
-            throw new Error(response?.error || '後端回傳失敗');
-          }
-
-          msg.textContent = '已完成最終確認！';
-          msg.style.color = 'var(--success)';
-          
-        } catch (error) {
-          msg.textContent = error.message || '送出失敗';
-          msg.style.color = 'var(--error)';
-        }
-      }
-
-      // ===== 載入狀態管理 =====
-      setLoading(isLoading) {
-        const wrap = this.$('.wrap');
-        if (wrap) {
-          if (isLoading) {
-            wrap.classList.add('loading');
-          } else {
-            wrap.classList.remove('loading');
-          }
-        }
-      }
+    /* 你的 GAS Web App URL（/exec） */
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec';
+/* 權重 */
+    const W = { I1:.075,I2:.075,I3:.075,I4:.075, M1:.075,M2:.075,M3:.075,M4:.075, T1:.10,T2:.10, F1:.033,F2:.033,F3:.034, E1:.05,E2:.05 };
+const $ = q => document.querySelector(q);
+    const params = new URLSearchParams(location.search);
+    const JUDGE = decodeURIComponent(params.get('judge')||'').trim();
+const IDS = ['I1','I2','I3','I4','M1','M2','M3','M4','T1','T2','F1','F2','F3','E1','E2'];
+    const els = IDS.map(id=>document.getElementById(id));
+function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; }
+    function liveTotal(){ let t=0; els.forEach(el=>{const v=Number(el.value||0); if(!isNaN(v)) t += v * (W[el.id]||0);}); $('#liveTotal').textContent=t.toFixed(2); return t; }
+    function buildProjectOptionText(p){ return `${p.id}｜${p.team}${p.hasScore?'（已評分）':''}`; }
+// --- JSONP helper（繞過 CORS） ---
+    function jsonp(params){
+      return new Promise((resolve,reject)=>{
+        const cb = 'cb_' + Math.random().toString(36).slice(2);
+        window[cb] = (data)=>{ resolve(data); cleanup(); };
+        const s = document.createElement('script');
+        const qs = new URLSearchParams(params);
+        qs.set('callback', cb);
+        s.src = API_URL + (API_URL.includes('?')?'&':'?') + qs.toString();
+        s.onerror = ()=>{ reject(new Error('連線失敗（JSONP）')); cleanup(); };
+        document.head.appendChild(s);
+        function cleanup(){ delete window[cb]; s.remove(); }
+      });
     }
-
-    // ===== 應用程式啟動 =====
-    document.addEventListener('DOMContentLoaded', () => {
-      try {
-        new ScoringApp();
-      } catch (error) {
-        console.error('應用程式啟動失敗:', error);
-        const msg = document.querySelector('#msg');
-        if (msg) {
-          msg.textContent = '系統初始化失敗，請重新整理頁面';
-          msg.className = 'msg hint';
-        }
+    async function apiGET(q){ const params = Object.fromEntries(new URLSearchParams(q)); return jsonp(params); }
+    async function apiPOST(body){ return jsonp(body); } // doGet 支援 action=save
+async function loadInit(){
+      const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
+      $('#title').textContent = JUDGE? `${JUDGE} 評選委員` : '評分系統（未帶入評審姓名）';
+      const sel = $('#project'); sel.innerHTML='';
+      if(!d.projects?.length){ sel.innerHTML = '<option value="">（尚無隊伍）</option>'; return; }
+      d.projects.forEach(p=>{ const opt=document.createElement('option'); opt.value=JSON.stringify(p); opt.textContent=buildProjectOptionText(p); sel.appendChild(opt); });
+    }
+function fillScores(map){
+      if(!map) return;
+      for(const id of IDS){
+        const el = document.getElementById(id);
+        const v = map[id] ?? 0;
+        el.value = v;
       }
-    });
+      liveTotal();
+    }
+async function loadLast(){
+      const p = getSelectedProject(); if(!p) return toast('請先選擇團隊', false);
+      const data = await apiGET(`action=last&judge=${encodeURIComponent(JUDGE)}&projectId=${encodeURIComponent(p.id)}`);
+      if(!data || !data.items){ toast('沒有上一筆評分'); resetScores(); return; }
+      fillScores(data.items); $('#comment').value = data.comment || ''; toast('已載入前一次評分');
+    }
+function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
+    function getSelectedProject(){ const v=$('#project').value; if(!v) return null; return JSON.parse(v); }
+async function save(){
+  const p = getSelectedProject(); const btn=$('#btnSave');
+  if(!p) return toast('請先選擇團隊', false);
+// 收集分數
+  const scores={};
+  els.forEach(el=>{
+    const n=Number(el.value||0);
+    if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100');
+    scores[el.id]=n;
+  });
+// 組請求
+  const body = {
+    action:'save',
+    data: JSON.stringify({
+      judge:JUDGE,
+      projectId:p.id,
+      team:p.team,
+      vendor:p.vendor||'',
+      scores,
+      comment:$('#comment').value.trim()
+    })
+  };
+btn.disabled=true; btn.textContent='送出中…';
+  try{
+    const res = await apiPOST(body);
+    // 1) 先看 ok
+    if (!res || res.ok === false) {
+      throw new Error(res?.error || '後端回傳失敗');
+    }
+    // 2) 確認 total 為數字
+    const total = Number(res.total);
+    if (!Number.isFinite(total)) {
+      throw new Error('後端未回傳總分（total）。請檢查 GAS 的 save_ 是否有 return { ok:true, total }，以及表頭欄名是否完全一致。');
+    }
+toast(`已送出，總分 ${total.toFixed(2)}`);
+    // 下拉顯示「已評分」
+    p.hasScore = true;
+    $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
+  }catch(e){
+    toast(e.message || '送出失敗', false);
+    // 想看更多除錯細節可開啟：
+    // console.error('save error:', e);
+  }finally{
+    btn.disabled=false; btn.textContent='送出評分';
+  }
+}
+// ===== 我的評分總覽（前端渲染＋事件） =====
+    function renderMyList(items){
+      const box = document.getElementById('myList');
+      const body = document.getElementById('myListBody');
+      if(!items || !items.length){
+        body.innerHTML = '<div class="muted">尚無評分紀錄</div>';
+        box.style.display = '';
+        return;
+      }
+      const rows = items.map(it=>{
+        const time = it.updatedAt ? new Date(it.updatedAt) : null;
+        const timeStr = time ? time.toLocaleString('zh-TW') : '';
+        return `
+          <tr>
+            <td>${it.projectId}</td>
+            <td>${it.team||''}</td>
+            <td style="text-align:right">${(it.total??'').toString()}</td>
+            <td>${timeStr}</td>
+            <td><button class="ghost" data-pid="${it.projectId}">檢視</button></td>
+          </tr>`;
+      }).join('');
+      body.innerHTML = `
+        <div style="overflow:auto">
+          <table style="width:100%; border-collapse:collapse">
+            <thead>
+              <tr>
+                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">報名編號</th>
+                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">隊伍名稱</th>
+                <th style="text-align:right;border-bottom:1px solid var(--border); padding:6px 4px">總分</th>
+                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">最後更新</th>
+                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">操作</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `;
+      box.style.display = '';
+body.querySelectorAll('button[data-pid]').forEach(btn=>{
+        btn.addEventListener('click', ()=>{
+          const pid = btn.getAttribute('data-pid');
+          const sel = document.getElementById('project');
+          let found = null;
+          [...sel.options].forEach(opt=>{
+            if(!opt.value) return;
+            const p = JSON.parse(opt.value);
+            if (String(p.id) === String(pid)) found = opt;
+          });
+          if(found){
+            sel.value = found.value;
+            resetScores();
+            loadLast().catch(()=>{});
+            toast(`已切換至 ${pid}，並載入上一筆評分`);
+            window.scrollTo({ top:0, behavior:'smooth' });
+          }else{
+            toast(`名單中找不到編號 ${pid}（可能未在「比賽隊伍列表」）`, false);
+          }
+        });
+      });
+    }
+async function loadMyScores(){
+      const res = await apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`);
+      renderMyList(res.items || []);
+    }
+  // 取全部隊伍數（用 init 的回傳）
+  async function fetchAllProjectsCount(){
+    const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
+    return (d.projects || []).length;
+  }
+  
+  // 打開最終確認彈窗、載入清單
+  async function openFinalModal(){
+    const modal = document.getElementById('finalModal');
+    const tbody = document.getElementById('finalTbody');
+    const hint  = document.getElementById('finalHint');
+    const msg   = document.getElementById('finalMsg');
+    const chk   = document.getElementById('finalCheck');
+  
+    msg.textContent = '';
+    chk.checked = false;
+    tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">讀取中…</td></tr>';
+    modal.style.display = 'flex';
+  
+    const [listRes, totalCount] = await Promise.all([
+      apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
+      fetchAllProjectsCount()
+    ]);
+    const items = listRes.items || [];
+  
+    if (!items.length){
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">尚無評分紀錄</td></tr>';
+    }else{
+      tbody.innerHTML = items.map(it=>{
+        const time = it.updatedAt ? new Date(it.updatedAt) : null;
+        const timeStr = time ? time.toLocaleString('zh-TW') : '';
+        const totalStr = (it.total!==undefined && it.total!==null) ? Number(it.total).toFixed(2) : '';
+        return `<tr>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.projectId}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.team||''}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right">${totalStr}</td>
+          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${timeStr}</td>
+        </tr>`;
+      }).join('');
+    }
+  
+    hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
+    document.getElementById('finalSubmit').disabled = (items.length < totalCount);
+  }
+  
+  // 送出20家成績最終確認（後端 action=confirm）
+  async function submitFinalConfirm(){
+    const chk = document.getElementById('finalCheck');
+    const msg = document.getElementById('finalMsg');
+    if(!chk.checked){
+      msg.textContent = '請先勾選確認聲明。';
+      msg.style.color = '#b91c1c';
+      return;
+    }
+    msg.textContent = '送出中…';
+    msg.style.color = '#6b7280';
+  
+    try{
+      const res = await apiPOST({ action:'confirm', data: JSON.stringify({ judge: JUDGE }) });
+      if (!res || res.ok === false) throw new Error(res?.error || '後端回傳失敗');
+      msg.textContent = '已完成最終確認！';
+      msg.style.color = '#059669';
+    }catch(e){
+      msg.textContent = e.message || '送出失敗';
+      msg.style.color = '#b91c1c';
+    }
+  }
+// 事件
+    els.forEach(el=> el.addEventListener('input', liveTotal));
+    $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
+    $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
+    document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
+    // 切換團隊時清空
+    document.getElementById('project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
+    document.getElementById('btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
+    document.getElementById('finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
+    document.getElementById('finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
+// 啟動
+    liveTotal();
+    loadInit().catch(e=> toast(e.message||'初始化失敗', false));
   </script>
 </body>
 </html>
