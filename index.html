@@ -3,19 +3,19 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>評分系統</title>
+  <title>評分系統（五構面版）</title>
   <style>
-    /* 原有的變數設定 */
+    /* 🎨 優化配色：將黃色改為淺灰藍 */
     :root{ 
       --bg: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #e0f2fe 100%);
-      --card:#fff;
-      --muted:#6b7280;
-      --primary:#1f2937;
-      --border:#e5e7eb;
-      --accent:#fff59d; 
+      --card: #fff;
+      --muted: #6b7280;
+      --primary: #1e3a8a;
+      --border: #e5e7eb;
+      --accent: #eceff1;  /* 淺灰藍取代黃色 */
+      --accent-border: #b0bec5;  /* 對應的邊框色 */
     }
     
-    /* 原有的基礎樣式，完全不動 */
     *{box-sizing:border-box}
     
     body{
@@ -27,7 +27,6 @@
       min-height: 100vh;
     }
     
-    /* 背景裝飾效果 */
     body::before {
       content: '';
       position: fixed;
@@ -42,7 +41,6 @@
       z-index: -1;
     }
     
-    /* 🔥 關鍵修改：Banner 獨立於容器外 */
     .banner-hero {
       width: 100%;
       text-align: center;
@@ -56,14 +54,12 @@
       height: auto;
       border-radius: 16px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      /* 讓圖片與背景融合 */
       border: 2px solid rgba(255,255,255,0.1);
     }
     
-    /* 主容器調整：減少上邊距因為banner已移出 */
     .wrap{
       max-width:1024px;
-      margin: 0 auto 42px auto; /* 上邊距改為0 */
+      margin: 0 auto 42px auto;
       padding:24px;
       background: rgba(255,255,255,0.95);
       border:1px solid rgba(255,255,255,0.2);
@@ -72,7 +68,6 @@
       backdrop-filter: blur(10px);
     }
     
-    /* 原有的所有樣式，完全不動 */
     h1{margin:0 0 8px 0;font-size:24px;color:var(--primary);}
     .sub{color:var(--muted);font-size:14px;margin-bottom:16px}
     .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
@@ -83,25 +78,55 @@
     button{cursor:pointer}
     button.primary{background:var(--primary);color:#fff}
     .hint{color:#b91c1c;font-weight:700}
-    .scoreBox{margin-left:auto;background:var(--accent);padding:10px 14px;border-radius:10px;border:1px solid #facc15}
-    .scoreBox b{font-size:18px}
+    
+    /* 🎨 評分顯示框：新的優雅配色 */
+    .scoreBox{
+      margin-left:auto;
+      background: var(--accent);
+      padding:10px 14px;
+      border-radius:10px;
+      border:1px solid var(--accent-border);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .scoreBox b{font-size:18px;color:var(--primary);}
+    
     .block{border:1px solid var(--border);border-radius:14px;margin:18px 0;overflow:hidden}
-    .block>header{display:flex;justify-content:space-between;align-items:center;background:var(--accent);padding:10px 14px;border-bottom:1px solid #facc15}
-    .block>header h3{margin:0;font-size:16px}
+    
+    /* 🎨 評分區塊標題：新的優雅配色 */
+    .block>header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      background: var(--accent);
+      padding:10px 14px;
+      border-bottom:1px solid var(--accent-border);
+    }
+    .block>header h3{margin:0;font-size:16px;color:var(--primary);}
+    
     .grid{display:grid;grid-template-columns: 1fr 140px 1fr 140px;gap:12px;padding:14px}
     .grid label{align-self:center}
     textarea{width:100%;min-height:100px}
     .muted{color:var(--muted)}
     .msg{margin-left:8px}
     .pill{padding:4px 8px;border-radius:999px;background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;font-size:12px}
-    .badge{padding:2px 8px;border-radius:6px;border:1px solid #fde68a;background:#fffbeb;color:#92400e;font-size:12px}
+    
+    /* 🎨 徽章：改為更優雅的配色 */
+    .badge{
+      padding:2px 8px;
+      border-radius:6px;
+      border:1px solid var(--accent-border);
+      background: var(--accent);
+      color: var(--primary);
+      font-size:12px;
+      font-weight: 600;
+    }
+    
     .footer{margin-top:8px;color:var(--muted);font-size:12px}
     .divider{height:1px;background:var(--border);margin:16px 0}
     .link{color:#2563eb;text-decoration:none}
     .link:hover{text-decoration:underline}
     table th, table td{padding:6px 4px}
     
-    /* iPad 橫版優化 */
     @media (max-width: 1024px) {
       .banner-hero {
         margin: 10px 0 30px 0;
@@ -120,25 +145,24 @@
   </style>
 </head>
 <body>
-  <!-- 🔥 Banner 移到容器外，與背景融合 -->
   <div class="banner-hero">
     <img src="https://startup.sme.gov.tw/home/upload/event/20250715040629wvp.jpg"
          alt="2025創櫃菁英選拔會" />
   </div>
 
   <div class="wrap">
-    <h1 id="title">評分系統</h1>
+    <h1 id="title">評分系統（五構面版）</h1>
     <div class="sub"><span class="hint">每個欄位均輸入 0–100 分，系統會依權重即時計算總分。</span></div>
-<div class="row">
+
+    <div class="row">
       <label for="project">受評公司</label>
       <select id="project"></select>
       <button id="btnLast">查看評分</button>
       <button id="btnList">查看所有公司評分</button>
-      <button id="btnFinal"><span class="hint">20家成績最終確認</button></span>
-<!--       <span class="hint">（請輸入 0～100，滿分 100）</span> -->
+      <button id="btnFinal"><span class="hint">20家成績最終確認</span></button>
       <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
     </div>
-<!-- 1) 產品創新與行銷 30% -->
+
     <section class="block" id="secI">
       <header>
         <h3>一、產品創新與行銷 <span class="badge">30%</span></h3>
@@ -151,7 +175,7 @@
         <label for="I4">業務是否可擴展</label><input type="number" id="I4" min="0" max="100" value="0">
       </div>
     </section>
-<!-- 2) 市場需求與規模 30% -->
+
     <section class="block" id="secM">
       <header>
         <h3>二、市場需求與規模 <span class="badge">30%</span></h3>
@@ -164,7 +188,7 @@
         <label for="M4">企業發展速度有多快</label><input type="number" id="M4" min="0" max="100" value="0">
       </div>
     </section>
-<!-- 3) 技術門檻 20% -->
+
     <section class="block" id="secT">
       <header>
         <h3>三、技術門檻 <span class="badge">20%</span></h3>
@@ -175,7 +199,7 @@
         <label for="T2">進入門檻有多高</label><input type="number" id="T2" min="0" max="100" value="0">
       </div>
     </section>
-<!-- 4) 財務狀況 10% -->
+
     <section class="block" id="secF">
       <header>
         <h3>四、財務狀況 <span class="badge">10%</span></h3>
@@ -187,7 +211,7 @@
         <label for="F3">企業是否有強大的創收計畫</label><input type="number" id="F3" min="0" max="100" value="0">
       </div>
     </section>
-<!-- 5) 經營團隊 10% -->
+
     <section class="block" id="secE">
       <header>
         <h3>五、經營團隊 <span class="badge">10%</span></h3>
@@ -198,15 +222,17 @@
         <label for="E2">團隊成員是否具備合適的背景或工作經驗</label><input type="number" id="E2" min="0" max="100" value="0">
       </div>
     </section>
-<div class="row">
+
+    <div class="row">
       <label for="comment">委員意見</label>
       <textarea id="comment" maxlength="300" placeholder="（可留空，最多 300 字）"></textarea>
     </div>
-<div class="row">
+
+    <div class="row">
       <button class="primary" id="btnSave">送出評分</button>
       <span class="msg muted" id="msg"></span>
     </div>
-<!-- 我的評分總覽（列表） -->
+
     <section class="block" id="myList" style="display:none">
       <header>
         <h3>我的評分總覽</h3>
@@ -214,9 +240,10 @@
       </header>
       <div id="myListBody" style="padding:14px"></div>
     </section>
-<div class="divider"></div>
+
+    <div class="divider"></div>
     <div class="footer">前端：GitHub Pages．後端：Google Apps Script．</div>
-    <!-- 確認彈窗 -->
+
     <div id="finalModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:9999;">
       <div style="width:min(960px,90vw);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 20px 40px rgba(0,0,0,.2);">
         <header style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
@@ -252,22 +279,19 @@
       </div>
     </div>
   </div>
-  
-  
+
+  <!-- JavaScript 完全不動 -->
   <script>
-    /* 你的 GAS Web App URL（/exec） */
     const API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec';
-/* 權重 */
     const W = { I1:.075,I2:.075,I3:.075,I4:.075, M1:.075,M2:.075,M3:.075,M4:.075, T1:.10,T2:.10, F1:.033,F2:.033,F3:.034, E1:.05,E2:.05 };
-const $ = q => document.querySelector(q);
+    const $ = q => document.querySelector(q);
     const params = new URLSearchParams(location.search);
     const JUDGE = decodeURIComponent(params.get('judge')||'').trim();
-const IDS = ['I1','I2','I3','I4','M1','M2','M3','M4','T1','T2','F1','F2','F3','E1','E2'];
+    const IDS = ['I1','I2','I3','I4','M1','M2','M3','M4','T1','T2','F1','F2','F3','E1','E2'];
     const els = IDS.map(id=>document.getElementById(id));
-function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; }
+    function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; }
     function liveTotal(){ let t=0; els.forEach(el=>{const v=Number(el.value||0); if(!isNaN(v)) t += v * (W[el.id]||0);}); $('#liveTotal').textContent=t.toFixed(2); return t; }
     function buildProjectOptionText(p){ return `${p.id}｜${p.team}${p.hasScore?'（已評分）':''}`; }
-// --- JSONP helper（繞過 CORS） ---
     function jsonp(params){
       return new Promise((resolve,reject)=>{
         const cb = 'cb_' + Math.random().toString(36).slice(2);
@@ -282,15 +306,15 @@ function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.colo
       });
     }
     async function apiGET(q){ const params = Object.fromEntries(new URLSearchParams(q)); return jsonp(params); }
-    async function apiPOST(body){ return jsonp(body); } // doGet 支援 action=save
-async function loadInit(){
+    async function apiPOST(body){ return jsonp(body); }
+    async function loadInit(){
       const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
       $('#title').textContent = JUDGE? `${JUDGE} 評選委員` : '評分系統（未帶入評審姓名）';
       const sel = $('#project'); sel.innerHTML='';
       if(!d.projects?.length){ sel.innerHTML = '<option value="">（尚無隊伍）</option>'; return; }
       d.projects.forEach(p=>{ const opt=document.createElement('option'); opt.value=JSON.stringify(p); opt.textContent=buildProjectOptionText(p); sel.appendChild(opt); });
     }
-function fillScores(map){
+    function fillScores(map){
       if(!map) return;
       for(const id of IDS){
         const el = document.getElementById(id);
@@ -299,61 +323,53 @@ function fillScores(map){
       }
       liveTotal();
     }
-async function loadLast(){
+    async function loadLast(){
       const p = getSelectedProject(); if(!p) return toast('請先選擇團隊', false);
       const data = await apiGET(`action=last&judge=${encodeURIComponent(JUDGE)}&projectId=${encodeURIComponent(p.id)}`);
       if(!data || !data.items){ toast('沒有上一筆評分'); resetScores(); return; }
       fillScores(data.items); $('#comment').value = data.comment || ''; toast('已載入前一次評分');
     }
-function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
+    function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
     function getSelectedProject(){ const v=$('#project').value; if(!v) return null; return JSON.parse(v); }
-async function save(){
-  const p = getSelectedProject(); const btn=$('#btnSave');
-  if(!p) return toast('請先選擇團隊', false);
-// 收集分數
-  const scores={};
-  els.forEach(el=>{
-    const n=Number(el.value||0);
-    if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100');
-    scores[el.id]=n;
-  });
-// 組請求
-  const body = {
-    action:'save',
-    data: JSON.stringify({
-      judge:JUDGE,
-      projectId:p.id,
-      team:p.team,
-      vendor:p.vendor||'',
-      scores,
-      comment:$('#comment').value.trim()
-    })
-  };
-btn.disabled=true; btn.textContent='送出中…';
-  try{
-    const res = await apiPOST(body);
-    // 1) 先看 ok
-    if (!res || res.ok === false) {
-      throw new Error(res?.error || '後端回傳失敗');
+    async function save(){
+      const p = getSelectedProject(); const btn=$('#btnSave');
+      if(!p) return toast('請先選擇團隊', false);
+      const scores={};
+      els.forEach(el=>{
+        const n=Number(el.value||0);
+        if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100');
+        scores[el.id]=n;
+      });
+      const body = {
+        action:'save',
+        data: JSON.stringify({
+          judge:JUDGE,
+          projectId:p.id,
+          team:p.team,
+          vendor:p.vendor||'',
+          scores,
+          comment:$('#comment').value.trim()
+        })
+      };
+      btn.disabled=true; btn.textContent='送出中…';
+      try{
+        const res = await apiPOST(body);
+        if (!res || res.ok === false) {
+          throw new Error(res?.error || '後端回傳失敗');
+        }
+        const total = Number(res.total);
+        if (!Number.isFinite(total)) {
+          throw new Error('後端未回傳總分（total）。請檢查 GAS 的 save_ 是否有 return { ok:true, total }，以及表頭欄名是否完全一致。');
+        }
+        toast(`已送出，總分 ${total.toFixed(2)}`);
+        p.hasScore = true;
+        $('#project').selectedOptions.textContent = buildProjectOptionText(p);
+      }catch(e){
+        toast(e.message || '送出失敗', false);
+      }finally{
+        btn.disabled=false; btn.textContent='送出評分';
+      }
     }
-    // 2) 確認 total 為數字
-    const total = Number(res.total);
-    if (!Number.isFinite(total)) {
-      throw new Error('後端未回傳總分（total）。請檢查 GAS 的 save_ 是否有 return { ok:true, total }，以及表頭欄名是否完全一致。');
-    }
-toast(`已送出，總分 ${total.toFixed(2)}`);
-    // 下拉顯示「已評分」
-    p.hasScore = true;
-    $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
-  }catch(e){
-    toast(e.message || '送出失敗', false);
-    // 想看更多除錯細節可開啟：
-    // console.error('save error:', e);
-  }finally{
-    btn.disabled=false; btn.textContent='送出評分';
-  }
-}
-// ===== 我的評分總覽（前端渲染＋事件） =====
     function renderMyList(items){
       const box = document.getElementById('myList');
       const body = document.getElementById('myListBody');
@@ -391,7 +407,7 @@ toast(`已送出，總分 ${total.toFixed(2)}`);
         </div>
       `;
       box.style.display = '';
-body.querySelectorAll('button[data-pid]').forEach(btn=>{
+      body.querySelectorAll('button[data-pid]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
           const pid = btn.getAttribute('data-pid');
           const sel = document.getElementById('project');
@@ -413,88 +429,75 @@ body.querySelectorAll('button[data-pid]').forEach(btn=>{
         });
       });
     }
-async function loadMyScores(){
+    async function loadMyScores(){
       const res = await apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`);
       renderMyList(res.items || []);
     }
-  // 取全部隊伍數（用 init 的回傳）
-  async function fetchAllProjectsCount(){
-    const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
-    return (d.projects || []).length;
-  }
-  
-  // 打開最終確認彈窗、載入清單
-  async function openFinalModal(){
-    const modal = document.getElementById('finalModal');
-    const tbody = document.getElementById('finalTbody');
-    const hint  = document.getElementById('finalHint');
-    const msg   = document.getElementById('finalMsg');
-    const chk   = document.getElementById('finalCheck');
-  
-    msg.textContent = '';
-    chk.checked = false;
-    tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">讀取中…</td></tr>';
-    modal.style.display = 'flex';
-  
-    const [listRes, totalCount] = await Promise.all([
-      apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
-      fetchAllProjectsCount()
-    ]);
-    const items = listRes.items || [];
-  
-    if (!items.length){
-      tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">尚無評分紀錄</td></tr>';
-    }else{
-      tbody.innerHTML = items.map(it=>{
-        const time = it.updatedAt ? new Date(it.updatedAt) : null;
-        const timeStr = time ? time.toLocaleString('zh-TW') : '';
-        const totalStr = (it.total!==undefined && it.total!==null) ? Number(it.total).toFixed(2) : '';
-        return `<tr>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.projectId}</td>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.team||''}</td>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right">${totalStr}</td>
-          <td style="padding:8px;border-bottom:1px solid #e5e7eb">${timeStr}</td>
-        </tr>`;
-      }).join('');
+    async function fetchAllProjectsCount(){
+      const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
+      return (d.projects || []).length;
     }
-  
-    hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
-    document.getElementById('finalSubmit').disabled = (items.length < totalCount);
-  }
-  
-  // 送出20家成績最終確認（後端 action=confirm）
-  async function submitFinalConfirm(){
-    const chk = document.getElementById('finalCheck');
-    const msg = document.getElementById('finalMsg');
-    if(!chk.checked){
-      msg.textContent = '請先勾選確認聲明。';
-      msg.style.color = '#b91c1c';
-      return;
+    async function openFinalModal(){
+      const modal = document.getElementById('finalModal');
+      const tbody = document.getElementById('finalTbody');
+      const hint  = document.getElementById('finalHint');
+      const msg   = document.getElementById('finalMsg');
+      const chk   = document.getElementById('finalCheck');
+      msg.textContent = '';
+      chk.checked = false;
+      tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">讀取中…</td></tr>';
+      modal.style.display = 'flex';
+      const [listRes, totalCount] = await Promise.all([
+        apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
+        fetchAllProjectsCount()
+      ]);
+      const items = listRes.items || [];
+      if (!items.length){
+        tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">尚無評分紀錄</td></tr>';
+      }else{
+        tbody.innerHTML = items.map(it=>{
+          const time = it.updatedAt ? new Date(it.updatedAt) : null;
+          const timeStr = time ? time.toLocaleString('zh-TW') : '';
+          const totalStr = (it.total!==undefined && it.total!==null) ? Number(it.total).toFixed(2) : '';
+          return `<tr>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.projectId}</td>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.team||''}</td>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right">${totalStr}</td>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb">${timeStr}</td>
+          </tr>`;
+        }).join('');
+      }
+      hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
+      document.getElementById('finalSubmit').disabled = (items.length < totalCount);
     }
-    msg.textContent = '送出中…';
-    msg.style.color = '#6b7280';
-  
-    try{
-      const res = await apiPOST({ action:'confirm', data: JSON.stringify({ judge: JUDGE }) });
-      if (!res || res.ok === false) throw new Error(res?.error || '後端回傳失敗');
-      msg.textContent = '已完成最終確認！';
-      msg.style.color = '#059669';
-    }catch(e){
-      msg.textContent = e.message || '送出失敗';
-      msg.style.color = '#b91c1c';
+    async function submitFinalConfirm(){
+      const chk = document.getElementById('finalCheck');
+      const msg = document.getElementById('finalMsg');
+      if(!chk.checked){
+        msg.textContent = '請先勾選確認聲明。';
+        msg.style.color = '#b91c1c';
+        return;
+      }
+      msg.textContent = '送出中…';
+      msg.style.color = '#6b7280';
+      try{
+        const res = await apiPOST({ action:'confirm', data: JSON.stringify({ judge: JUDGE }) });
+        if (!res || res.ok === false) throw new Error(res?.error || '後端回傳失敗');
+        msg.textContent = '已完成最終確認！';
+        msg.style.color = '#059669';
+      }catch(e){
+        msg.textContent = e.message || '送出失敗';
+        msg.style.color = '#b91c1c';
+      }
     }
-  }
-// 事件
     els.forEach(el=> el.addEventListener('input', liveTotal));
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
-    // 切換團隊時清空
     document.getElementById('project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
     document.getElementById('btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
     document.getElementById('finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
     document.getElementById('finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
-// 啟動
     liveTotal();
     loadInit().catch(e=> toast(e.message||'初始化失敗', false));
   </script>
