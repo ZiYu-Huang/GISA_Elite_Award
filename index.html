@@ -103,7 +103,7 @@
     }
     .block>header h3{margin:0;font-size:16px;color:var(--primary);}
     
-    .grid{display:grid;grid-template-columns: 1fr 140px 1fr 140px;gap:12px;padding:14px}
+    .grid{display:grid;grid-template-columns: 1fr 140px;gap:12px;padding:14px}
     .grid label{align-self:center}
     textarea{width:100%;min-height:100px}
     .muted{color:var(--muted)}
@@ -152,7 +152,7 @@
 
   <div class="wrap">
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub"><span class="hint">每個欄位均輸入 0–100 分，系統會依權重即時計算總分。</span></div>
+    <div class="sub"><span class="hint">每個構面均輸入 0–100 分，系統會依權重即時計算總分。</span></div>
 
     <div class="row">
       <label for="project">受評公司</label>
@@ -166,60 +166,50 @@
     <section class="block" id="secI">
       <header>
         <h3>一、產品創新與行銷 <span class="badge">30%</span></h3>
-        <span class="muted">各7.5%</span>
       </header>
       <div class="grid">
-        <label for="I1">面對市場的問題是真正的痛點嗎</label><input type="number" id="I1" min="0" max="100" value="0">
-        <label for="I2">產品解決痛點的效果如何</label><input type="number" id="I2" min="0" max="100" value="0">
-        <label for="I3">市場行銷策略可行性</label><input type="number" id="I3" min="0" max="100" value="0">
-        <label for="I4">業務是否可擴展</label><input type="number" id="I4" min="0" max="100" value="0">
+        <label for="I">產品創新與行銷整體評分</label>
+        <input type="number" id="I" min="0" max="100" value="0">
       </div>
     </section>
 
     <section class="block" id="secM">
       <header>
         <h3>二、市場需求與規模 <span class="badge">30%</span></h3>
-        <span class="muted">各7.5%</span>
       </header>
       <div class="grid">
-        <label for="M1">市場規模合理性與成長性</label><input type="number" id="M1" min="0" max="100" value="0">
-        <label for="M2">目標市場對象是否合宜</label><input type="number" id="M2" min="0" max="100" value="0">
-        <label for="M3">企業收入/客戶穩定性與持續性</label><input type="number" id="M3" min="0" max="100" value="0">
-        <label for="M4">企業發展速度有多快</label><input type="number" id="M4" min="0" max="100" value="0">
+        <label for="M">市場需求與規模整體評分</label>
+        <input type="number" id="M" min="0" max="100" value="0">
       </div>
     </section>
 
     <section class="block" id="secT">
       <header>
         <h3>三、技術門檻 <span class="badge">20%</span></h3>
-        <span class="muted">各10%</span>
       </header>
       <div class="grid">
-        <label for="T1">企業與競爭對手相比有哪些優勢</label><input type="number" id="T1" min="0" max="100" value="0">
-        <label for="T2">進入門檻有多高</label><input type="number" id="T2" min="0" max="100" value="0">
+        <label for="T">技術門檻整體評分</label>
+        <input type="number" id="T" min="0" max="100" value="0">
       </div>
     </section>
 
     <section class="block" id="secF">
       <header>
         <h3>四、財務狀況 <span class="badge">10%</span></h3>
-        <span class="muted">各約3.3%</span>
       </header>
       <div class="grid">
-        <label for="F1">企業過去財務績效</label><input type="number" id="F1" min="0" max="100" value="0">
-        <label for="F2">企業未來財務規劃</label><input type="number" id="F2" min="0" max="100" value="0">
-        <label for="F3">企業是否有強大的創收計畫</label><input type="number" id="F3" min="0" max="100" value="0">
+        <label for="F">財務狀況整體評分</label>
+        <input type="number" id="F" min="0" max="100" value="0">
       </div>
     </section>
 
     <section class="block" id="secE">
       <header>
         <h3>五、經營團隊 <span class="badge">10%</span></h3>
-        <span class="muted">各5%</span>
       </header>
       <div class="grid">
-        <label for="E1">團隊實力</label><input type="number" id="E1" min="0" max="100" value="0">
-        <label for="E2">團隊成員是否具備合適的背景或工作經驗</label><input type="number" id="E2" min="0" max="100" value="0">
+        <label for="E">經營團隊整體評分</label>
+        <input type="number" id="E" min="0" max="100" value="0">
       </div>
     </section>
 
@@ -280,14 +270,13 @@
     </div>
   </div>
 
-  <!-- JavaScript 完全不動 -->
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwuebWFtlKRMAhNeMSqPTwHVBizLWJ__hQXiUn4lJxp6ETHO3SdbBJhZ7UKKMVitaXJ/exec';
-    const W = { I1:.075,I2:.075,I3:.075,I4:.075, M1:.075,M2:.075,M3:.075,M4:.075, T1:.10,T2:.10, F1:.033,F2:.033,F3:.034, E1:.05,E2:.05 };
+    const W = { I: 0.30, M: 0.30, T: 0.20, F: 0.10, E: 0.10 };
     const $ = q => document.querySelector(q);
     const params = new URLSearchParams(location.search);
     const JUDGE = decodeURIComponent(params.get('judge')||'').trim();
-    const IDS = ['I1','I2','I3','I4','M1','M2','M3','M4','T1','T2','F1','F2','F3','E1','E2'];
+    const IDS = ['I', 'M', 'T', 'F', 'E'];
     const els = IDS.map(id=>document.getElementById(id));
     function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; }
     function liveTotal(){ let t=0; els.forEach(el=>{const v=Number(el.value||0); if(!isNaN(v)) t += v * (W[el.id]||0);}); $('#liveTotal').textContent=t.toFixed(2); return t; }
