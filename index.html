@@ -237,7 +237,7 @@
     <div id="finalModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:9999;">
       <div style="width:min(960px,90vw);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 20px 40px rgba(0,0,0,.2);">
         <header style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
-          <h3 style="margin:0;font-size:16px">🎉 恭喜！您已完成所有評分 — 最終確認</h3>
+          <h3 style="margin:0;font-size:16px">最終確認 — 我打的所有分數</h3>
           <button id="finalClose" class="ghost" style="padding:6px 10px">關閉</button>
         </header>
         <div style="padding:14px 16px">
@@ -320,26 +320,6 @@
     }
     function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
     function getSelectedProject(){ const v=$('#project').value; if(!v) return null; return JSON.parse(v); }
-    
-    // 檢查是否全部評完，如果是則自動彈出最終確認視窗
-    async function checkAllCompleted(){
-      try {
-        const [listRes, totalCount] = await Promise.all([
-          apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
-          fetchAllProjectsCount()
-        ]);
-        const items = listRes.items || [];
-        if (items.length === totalCount && totalCount > 0) {
-          // 延遲1秒後自動彈出確認視窗，讓用戶看到成功訊息
-          setTimeout(() => {
-            openFinalModal().catch(()=>{});
-          }, 1000);
-        }
-      } catch(e) {
-        // 檢查失敗不影響主流程
-      }
-    }
-    
     async function save(){
       const p = getSelectedProject(); const btn=$('#btnSave');
       if(!p) return toast('請先選擇團隊', false);
@@ -372,11 +352,7 @@
         }
         toast(`已送出，總分 ${total.toFixed(2)}`);
         p.hasScore = true;
-        $('#project').selectedOptions.textContent = buildProjectOptionText(p);
-        
-        // 檢查是否全部評完
-        checkAllCompleted();
-        
+        $('#project').selectedOptions[0].textContent = buildProjectOptionText(p);
       }catch(e){
         toast(e.message || '送出失敗', false);
       }finally{
