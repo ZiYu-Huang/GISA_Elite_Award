@@ -22,7 +22,6 @@
       background-attachment: fixed;
       color:#111827;
       min-height: 100vh;
-      padding-bottom: env(safe-area-inset-bottom, 16px);
     }
     body::before {
       content: '';
@@ -35,15 +34,15 @@
     .wrap{ max-width:1024px; margin: 0 auto 42px auto; padding:24px; background: rgba(255,255,255,0.95); border:1px solid rgba(255,255,255,0.2); border-radius:16px; box-shadow: 0 20px 40px rgba(0,0,0,0.1); backdrop-filter: blur(10px); }
     h1{margin:0 0 8px 0;font-size:24px;color:var(--primary);}
     .sub{color:var(--muted);font-size:14px;margin-bottom:16px}
-    .row{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:12px 0}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:12px 0}
     label{font-weight:600}
-    select,input,textarea,button{font-size:16px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;min-height:44px}
+    select,input,textarea,button{font-size:16px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff}
     select,input{min-width:120px}
-    input[type=number]{width:140px}
-    button{cursor:pointer;min-height:44px;min-width:44px;padding:10px 14px}
+    input[type=number]{width:110px}
+    button{cursor:pointer}
     button.primary{background:var(--primary);color:#fff}
     .hint{color:#b91c1c;font-weight:700}
-    .scoreBox{ margin-left:auto; background: var(--accent); padding:10px 14px; border-radius:10px; border:1px solid var(--accent-border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); position: sticky; top: 12px; }
+    .scoreBox{ margin-left:auto; background: var(--accent); padding:10px 14px; border-radius:10px; border:1px solid var(--accent-border); box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .scoreBox b{font-size:18px;color:var(--primary);}
     .block{border:1px solid var(--border);border-radius:14px;margin:18px 0;overflow:hidden}
     .block>header{ display:flex; justify-content:space-between; align-items:center; background: var(--accent); padding:10px 14px; border-bottom:1px solid var(--accent-border); }
@@ -60,35 +59,73 @@
     .link{color:#2563eb;text-decoration:none}
     .link:hover{text-decoration:underline}
     table th, table td{padding:6px 4px}
-    /* Final Modal table sticky header + iOS smooth scroll */
-    #finalTableWrap thead th { position: sticky; top: 0; background:#fff; z-index: 1; }
-    #finalTableWrap { overflow:auto; -webkit-overflow-scrolling: touch; }
-
     @media (max-width: 1024px) {
       .banner-hero { margin: 10px 0 30px 0; }
       .banner-hero img { max-width: 95%; border-radius: 12px; }
       .wrap { margin: 0 20px 30px 20px; padding: 20px; }
     }
-    @media (orientation: landscape) and (min-width: 1024px){
-      .wrap { max-width: 1180px; }
-      .grid { grid-template-columns: 1fr 200px; }
-      h1 { font-size: 28px; }
-      .block > header h3 { font-size: 18px; }
-      .block { margin: 22px 0; }
+
+    /* ===== 新增：卡片化雙欄佈局與強化樣式（請保留在<style>最後以覆蓋生效） ===== */
+    .cards{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 16px;
+      margin: 18px 0;
     }
-    @media (prefers-reduced-motion: reduce){
-      * { transition: none !important; animation: none !important; }
-      .wrap { box-shadow: 0 10px 20px rgba(0,0,0,.08); }
+    .block{
+      margin: 0; /* 交由 .cards 的 gap 控制間距 */
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+      position: relative;
+      border-left: 6px solid var(--sec-color, var(--primary)); /* 左側色條 */
     }
+    .block>header{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #f8fafc;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--accent-border);
+    }
+    .block>header h3{
+      margin: 0;
+      font-size: 18px; /* 放大標題字級 */
+      color: var(--sec-color, var(--primary)); /* 構面色 */
+      letter-spacing: .2px;
+    }
+    .grid{
+      padding: 12px 16px 16px;
+      gap: 10px;
+      grid-template-columns: 1fr 160px; /* 拉開輸入區 */
+    }
+    .badge{
+      background: #eef2ff;
+      color: var(--sec-color, var(--primary));
+      border-color: #c7d2fe;
+    }
+    /* 各構面專屬色 */
+    #secI{ --sec-color:#3b82f6; } /* 產品創新與行銷 */
+    #secM{ --sec-color:#10b981; } /* 市場需求與規模 */
+    #secT{ --sec-color:#f59e0b; } /* 技術門檻 */
+    #secF{ --sec-color:#ef4444; } /* 財務狀況 */
+    #secE{ --sec-color:#8b5cf6; } /* 經營團隊 */
+    @media (max-width: 420px){
+      .grid{ grid-template-columns: 1fr 120px; }
+    }
+    /* ===== 新增樣式結束 ===== */
   </style>
 </head>
 <body>
   <div class="banner-hero">
     <img src="https://startup.sme.gov.tw/home/upload/event/20250715040629wvp.jpg" alt="2025創櫃菁英選拔會" />
   </div>
+
   <div class="wrap">
     <h1 id="title">評分系統（五構面版）</h1>
     <div class="sub"><span class="hint">每個構面均輸入 0–100 分，系統會依權重即時計算總分。</span></div>
+
     <div class="row">
       <label for="project">受評公司</label>
       <select id="project"></select>
@@ -97,49 +134,60 @@
       <button id="btnFinal"><span class="hint">20家成績最終確認</span></button>
       <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
     </div>
-    <section class="block" id="secI">
-      <header><h3>一、產品創新與行銷 <span class="badge">30%</span></h3></header>
-      <div class="grid">
-        <label for="I">產品創新與行銷整體評分</label>
-        <input type="number" id="I" min="0" max="100" step="1" inputmode="decimal" pattern="[0-9]*" value="0">
-      </div>
-    </section>
-    <section class="block" id="secM">
-      <header><h3>二、市場需求與規模 <span class="badge">30%</span></h3></header>
-      <div class="grid">
-        <label for="M">市場需求與規模整體評分</label>
-        <input type="number" id="M" min="0" max="100" step="1" inputmode="decimal" pattern="[0-9]*" value="0">
-      </div>
-    </section>
-    <section class="block" id="secT">
-      <header><h3>三、技術門檻 <span class="badge">20%</span></h3></header>
-      <div class="grid">
-        <label for="T">技術門檻整體評分</label>
-        <input type="number" id="T" min="0" max="100" step="1" inputmode="decimal" pattern="[0-9]*" value="0">
-      </div>
-    </section>
-    <section class="block" id="secF">
-      <header><h3>四、財務狀況 <span class="badge">10%</span></h3></header>
-      <div class="grid">
-        <label for="F">財務狀況整體評分</label>
-        <input type="number" id="F" min="0" max="100" step="1" inputmode="decimal" pattern="[0-9]*" value="0">
-      </div>
-    </section>
-    <section class="block" id="secE">
-      <header><h3>五、經營團隊 <span class="badge">10%</span></h3></header>
-      <div class="grid">
-        <label for="E">經營團隊整體評分</label>
-        <input type="number" id="E" min="0" max="100" step="1" inputmode="decimal" pattern="[0-9]*" value="0">
-      </div>
-    </section>
+
+    <!-- 新增：將五大構面包在 .cards 容器中 -->
+    <div class="cards">
+      <section class="block" id="secI">
+        <header><h3>一、產品創新與行銷 <span class="badge">30%</span></h3></header>
+        <div class="grid">
+          <label for="I">產品創新與行銷整體評分</label>
+          <input type="number" id="I" min="0" max="100" value="0">
+        </div>
+      </section>
+
+      <section class="block" id="secM">
+        <header><h3>二、市場需求與規模 <span class="badge">30%</span></h3></header>
+        <div class="grid">
+          <label for="M">市場需求與規模整體評分</label>
+          <input type="number" id="M" min="0" max="100" value="0">
+        </div>
+      </section>
+
+      <section class="block" id="secT">
+        <header><h3>三、技術門檻 <span class="badge">20%</span></h3></header>
+        <div class="grid">
+          <label for="T">技術門檻整體評分</label>
+          <input type="number" id="T" min="0" max="100" value="0">
+        </div>
+      </section>
+
+      <section class="block" id="secF">
+        <header><h3>四、財務狀況 <span class="badge">10%</span></h3></header>
+        <div class="grid">
+          <label for="F">財務狀況整體評分</label>
+          <input type="number" id="F" min="0" max="100" value="0">
+        </div>
+      </section>
+
+      <section class="block" id="secE">
+        <header><h3>五、經營團隊 <span class="badge">10%</span></h3></header>
+        <div class="grid">
+          <label for="E">經營團隊整體評分</label>
+          <input type="number" id="E" min="0" max="100" value="0">
+        </div>
+      </section>
+    </div>
+
     <div class="row">
       <label for="comment">委員意見</label>
       <textarea id="comment" maxlength="300" placeholder="（可留空，最多 300 字）"></textarea>
     </div>
+
     <div class="row">
       <button class="primary" id="btnSave">送出評分</button>
       <span class="msg muted" id="msg"></span>
     </div>
+
     <section class="block" id="myList" style="display:none">
       <header>
         <h3>我的評分總覽</h3>
@@ -147,8 +195,10 @@
       </header>
       <div id="myListBody" style="padding:14px"></div>
     </section>
+
     <div class="divider"></div>
     <div class="footer">前端：GitHub Pages．後端：Google Apps Script．</div>
+
     <div id="finalModal" style="position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:9999;">
       <div style="width:min(960px,90vw);max-height:80vh;overflow:auto;background:#fff;border-radius:14px;border:1px solid #e5e7eb;box-shadow:0 20px 40px rgba(0,0,0,.2);">
         <header style="padding:14px 16px;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;">
@@ -171,7 +221,7 @@
             </table>
           </div>
           <div style="margin-top:12px">
-            <label style="display:flex;gap:8px;align-items:flex-start;min-height:44px">
+            <label style="display:flex;gap:8px;align-items:flex-start">
               <input type="checkbox" id="finalCheck">
               <span>我已核對上表內容，<b>確認這是我最終要送出的分數</b><span class="hint">(注意：送出後無法修改)。</span></span>
             </label>
@@ -184,6 +234,7 @@
       </div>
     </div>
   </div>
+
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbxYonZdwpJqFYEpwNqci1zpiAk6T7JgtyLeqP3ICRr-w-RukYAKzp_1L1Ngu42x8vhb/exec';
     const W = { I: 0.30, M: 0.30, T: 0.20, F: 0.10, E: 0.10 };
@@ -263,7 +314,7 @@
         toast(`已送出，總分 ${total.toFixed(2)}`);
         p.hasScore = true;
         const sel = $('#project');
-        if (sel.selectedOptions && sel.selectedOptions.length){
+        if (sel.selectedOptions && sel.selectedOptions.length) {
           sel.selectedOptions.textContent = buildProjectOptionText(p);
         }
       }catch(e){
@@ -392,16 +443,7 @@
         msg.style.color = '#b91c1c';
       }
     }
-    // 實時計分 + 失焦時夾擊 0~100（整數）
-    function clamp01(n){ if (isNaN(n)) return 0; return Math.max(0, Math.min(100, Math.round(n))); }
-    els.forEach(el=>{
-      el.addEventListener('input', liveTotal);
-      el.addEventListener('blur', ()=>{
-        const v = clamp01(Number(el.value));
-        if (String(v) !== String(el.value)) { el.value = v; liveTotal(); }
-      });
-    });
-
+    els.forEach(el=> el.addEventListener('input', liveTotal));
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
@@ -409,7 +451,6 @@
     document.getElementById('btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
     document.getElementById('finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
     document.getElementById('finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
-
     liveTotal();
     loadInit().catch(e=> toast(e.message||'初始化失敗', false));
   </script>
