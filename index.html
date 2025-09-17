@@ -114,6 +114,24 @@
     @media (max-width: 420px){
       .grid{ grid-template-columns: 1fr 120px; }
     }
+    /* ===== 新增：表格欄距與標題放大 ===== */
+
+    /* 我的評分總覽：拉開「總分」與「最後更新」距離 */
+    #myList table{ table-layout: fixed; } /* 固定表格布局便於控制欄寬 */
+    #myList th:nth-child(3), #myList td:nth-child(3){ width: 90px; padding-right: 12px; text-align: right; }
+    #myList th:nth-child(4), #myList td:nth-child(4){ min-width: 220px; padding-left: 16px; } /* 讓「最後更新」更靠右 */
+    #myList th:nth-child(5), #myList td:nth-child(5){ padding-left: 16px; } /* 與「操作」保留安全距離 */
+    
+    /* 最終確認彈窗表格：同樣優化「總分 / 最後更新」距離 */
+    #finalTableWrap table{ table-layout: fixed; }
+    #finalTableWrap th:nth-child(3), #finalTableWrap td:nth-child(3){ width: 90px; padding-right: 12px; text-align: right; }
+    #finalTableWrap th:nth-child(4), #finalTableWrap td:nth-child(4){ min-width: 220px; padding-left: 16px; }
+    
+    /* 放大評選委員名字與提示行 */
+    #title{ font-size: 28px; }
+    .sub{ font-size: 18px; }
+    .sub .hint{ font-size: 18px; }
+    
     /* ===== 新增樣式結束 ===== */
   </style>
 </head>
@@ -337,10 +355,12 @@
         if (!Number.isFinite(total)) { throw new Error('後端未回傳總分（total）。請檢查後端 save_ 回傳。'); }
         toast(`已送出，總分 ${total.toFixed(2)}`);
         p.hasScore = true;
+        
+        // 修正：指向第一個被選取的 <option> 並更新其文字，顯示（已評分）
         const sel = $('#project');
-        if (sel.selectedOptions && sel.selectedOptions.length) {
-          sel.selectedOptions.textContent = buildProjectOptionText(p);
-        }
+        const opt = sel.selectedOptions && sel.selectedOptions; // HTMLCollection 取第 0 個
+        if (opt) opt.textContent = buildProjectOptionText(p);      // 更新顯示文字
+
         // 送出後檢查是否已評完所有公司，若評完則自動彈出最終確認
         checkAndPromptFinal('save');
       }catch(e){
