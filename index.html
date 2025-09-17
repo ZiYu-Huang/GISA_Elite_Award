@@ -243,9 +243,11 @@
     const JUDGE = decodeURIComponent(params.get('judge')||'').trim();
     const IDS = ['I', 'M', 'T', 'F', 'E'];
     const els = IDS.map(id=>document.getElementById(id));
-    function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; }
-    function liveTotal(){ let t=0; els.forEach(el=>{const v=Number(el.value||0); if(!isNaN(v)) t += v * (W[el.id]||0);}); $('#liveTotal').textContent=t.toFixed(2); return t; }
-    function buildProjectOptionText(p){ return `${p.id}｜${p.team}${p.hasScore?'（已評分）':''}`; }
+  
+    function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; } // [說明文字，不需引用]
+    function liveTotal(){ let t=0; els.forEach(el=>{const v=Number(el.value||0); if(!isNaN(v)) t += v * (W[el.id]||0);}); $('#liveTotal').textContent=t.toFixed(2); return t; } // [說明文字，不需引用]
+    function buildProjectOptionText(p){ return `${p.id}｜${p.team}${p.hasScore?'（已評分）':''}`; } // [說明文字，不需引用]
+  
     function jsonp(params){
       return new Promise((resolve,reject)=>{
         const cb = 'cb_' + Math.random().toString(36).slice(2);
@@ -259,8 +261,9 @@
         function cleanup(){ delete window[cb]; s.remove(); }
       });
     }
-    async function apiGET(q){ const params = Object.fromEntries(new URLSearchParams(q)); return jsonp(params); }
-    async function apiPOST(body){ return jsonp(body); }
+    async function apiGET(q){ const params = Object.fromEntries(new URLSearchParams(q)); return jsonp(params); } // [說明文字，不需引用]
+    async function apiPOST(body){ return jsonp(body); } // [說明文字，不需引用]
+  
     async function loadInit(){
       const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
       $('#title').textContent = JUDGE? `${JUDGE} 評選委員` : '評分系統（未帶入評審姓名）';
@@ -268,6 +271,7 @@
       if(!d.projects?.length){ sel.innerHTML = '<option value="">（尚無隊伍）</option>'; return; }
       d.projects.forEach(p=>{ const opt=document.createElement('option'); opt.value=JSON.stringify(p); opt.textContent=buildProjectOptionText(p); sel.appendChild(opt); });
     }
+  
     function fillScores(map){
       if(!map) return;
       for(const id of IDS){
@@ -277,14 +281,34 @@
       }
       liveTotal();
     }
+  
     async function loadLast(){
       const p = getSelectedProject(); if(!p) return toast('請先選擇團隊', false);
       const data = await apiGET(`action=last&judge=${encodeURIComponent(JUDGE)}&projectId=${encodeURIComponent(p.id)}`);
       if(!data || !data.items){ toast('沒有上一筆評分'); resetScores(); return; }
       fillScores(data.items); $('#comment').value = data.comment || ''; toast('已載入前一次評分');
     }
-    function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
-    function getSelectedProject(){ const v=$('#project').value; if(!v) return null; return JSON.parse(v); }
+  
+    function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); } // [說明文字，不需引用]
+    function getSelectedProject(){ const v=$('#project').value; if(!v) return null; return JSON.parse(v); } // [說明文字，不需引用]
+  
+    // 新增：檢查是否評完全部，若評完自動開啟最終確認視窗
+    async function checkAndPromptFinal(trigger='manual'){
+      try{
+        const [listRes, totalCount] = await Promise.all([
+          apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
+          fetchAllProjectsCount()
+        ]);
+        const items = listRes.items || [];
+        if (totalCount > 0 && items.length >= totalCount){
+          await openFinalModal(); // 自動彈出最終確認視窗
+          toast('已完成所有評分，請進行最終確認', true);
+        }
+      }catch(e){
+        // 靜默失敗即可
+      }
+    }
+  
     async function save(){
       const p = getSelectedProject(); const btn=$('#btnSave');
       if(!p) return toast('請先選擇團隊', false);
@@ -310,19 +334,22 @@
         const res = await apiPOST(body);
         if (!res || res.ok === false) { throw new Error(res?.error || '後端回傳失敗'); }
         const total = Number(res.total);
-        if (!Number.isFinite(total)) { throw new Error('後端未回傳總分（total）。請檢查 GAS 的 save_ 是否有 return { ok:true, total }，以及表頭欄名是否完全一致。'); }
+        if (!Number.isFinite(total)) { throw new Error('後端未回傳總分（total）。請檢查後端 save_ 回傳。'); }
         toast(`已送出，總分 ${total.toFixed(2)}`);
         p.hasScore = true;
         const sel = $('#project');
         if (sel.selectedOptions && sel.selectedOptions.length) {
           sel.selectedOptions.textContent = buildProjectOptionText(p);
         }
+        // 送出後檢查是否已評完所有公司，若評完則自動彈出最終確認
+        checkAndPromptFinal('save');
       }catch(e){
         toast(e.message || '送出失敗', false);
       }finally{
         btn.disabled=false; btn.textContent='送出評分';
       }
     }
+  
     function renderMyList(items){
       const box = document.getElementById('myList');
       const body = document.getElementById('myListBody');
@@ -382,24 +409,31 @@
         });
       });
     }
+  
     async function loadMyScores(){
       const res = await apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`);
       renderMyList(res.items || []);
     }
+  
     async function fetchAllProjectsCount(){
       const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
       return (d.projects || []).length;
     }
+  
+    // 強化：最終確認彈窗，要求勾選聲明才可送出
     async function openFinalModal(){
       const modal = document.getElementById('finalModal');
       const tbody = document.getElementById('finalTbody');
       const hint  = document.getElementById('finalHint');
       const msg   = document.getElementById('finalMsg');
       const chk   = document.getElementById('finalCheck');
+      const btnSubmit = document.getElementById('finalSubmit');
+  
       msg.textContent = '';
       chk.checked = false;
       tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">讀取中…</td></tr>';
       modal.style.display = 'flex';
+  
       const [listRes, totalCount] = await Promise.all([
         apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
         fetchAllProjectsCount()
@@ -421,8 +455,33 @@
         }).join('');
       }
       hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
-      document.getElementById('finalSubmit').disabled = (items.length < totalCount);
+  
+      // 只有在「已評完」且「勾選確認」後才可送出
+      const syncSubmitDisabled = ()=>{
+        btnSubmit.disabled = (items.length < totalCount) || !chk.checked;
+      };
+      chk.onchange = syncSubmitDisabled; // 使用事件監聽以即時更新按鈕可用性
+      syncSubmitDisabled(); // 初始同步
     }
+  
+    // 嘗試以多步驟方式關閉視窗（瀏覽器僅允許腳本關閉由腳本開啟的分頁）
+    function closeWindowGracefully(){
+      try { window.close(); } catch(e) {}
+      setTimeout(()=>{
+        if (!window.closed){ // 若仍未關閉，改為覆寫自身後關閉
+          try {
+            window.open('', '_self');
+            window.close();
+          } catch(e){}
+        }
+      }, 300);
+      setTimeout(()=>{
+        if (!window.closed){ // 若仍未關閉，最後導向空白頁作為退場
+          location.href = 'about:blank';
+        }
+      }, 900);
+    }
+  
     async function submitFinalConfirm(){
       const chk = document.getElementById('finalCheck');
       const msg = document.getElementById('finalMsg');
@@ -436,14 +495,18 @@
       try{
         const res = await apiPOST({ action:'confirm', data: JSON.stringify({ judge: JUDGE }) });
         if (!res || res.ok === false) throw new Error(res?.error || '後端回傳失敗');
-        msg.textContent = '已完成最終確認！';
+        // 成功後顯示感謝訊息並嘗試自動關閉
+        msg.textContent = '感謝您的評分';
         msg.style.color = '#059669';
+        setTimeout(()=>{ closeWindowGracefully(); }, 800);
       }catch(e){
         msg.textContent = e.message || '送出失敗';
         msg.style.color = '#b91c1c';
       }
     }
-    els.forEach(el=> el.addEventListener('input', liveTotal));
+  
+    // 綁定事件
+    els.forEach(el=> el.addEventListener('input', liveTotal)); // 推薦以 addEventListener 綁定事件
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
@@ -451,8 +514,12 @@
     document.getElementById('btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
     document.getElementById('finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
     document.getElementById('finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
+  
+    // 初始化
     liveTotal();
-    loadInit().catch(e=> toast(e.message||'初始化失敗', false));
+    loadInit()
+      .then(()=> checkAndPromptFinal('init'))
+      .catch(e=> toast(e.message||'初始化失敗', false));
   </script>
 </body>
 </html>
