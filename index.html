@@ -142,7 +142,7 @@
 
   <div class="wrap">
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub"><span class="hint">每個構面均輸入 0–100 分，系統會依權重即時計算總分。</span></div>
+    <div class="sub"><span class="hint">每個構面分別有上限 30、30、20、10、10分，可輸入到小數點後兩位，滿分 100 分。</span></div>
 
     <div class="row">
       <label for="project">受評公司</label>
@@ -156,42 +156,42 @@
     <!-- 新增：將五大構面包在 .cards 容器中 -->
     <div class="cards">
       <section class="block" id="secI">
-        <header><h3>一、產品創新與行銷 <span class="badge">30%</span></h3></header>
+        <header><h3>一、產品創新與行銷 <span class="badge">上限30分</span></h3></header>
         <div class="grid">
           <label for="I">產品創新與行銷整體評分</label>
-          <input type="number" id="I" min="0" max="100" value="0">
+          <input type="number" id="I" min="0" max="30" step="0.01" value="0">
         </div>
       </section>
 
       <section class="block" id="secM">
-        <header><h3>二、市場需求與規模 <span class="badge">30%</span></h3></header>
+        <header><h3>二、市場需求與規模 <span class="badge">上限30分</span></h3></header>
         <div class="grid">
           <label for="M">市場需求與規模整體評分</label>
-          <input type="number" id="M" min="0" max="100" value="0">
+          <input type="number" id="M" min="0" max="30" step="0.01" value="0">
         </div>
       </section>
 
       <section class="block" id="secT">
-        <header><h3>三、技術門檻 <span class="badge">20%</span></h3></header>
+        <header><h3>三、技術門檻 <span class="badge">上限20分</span></h3></header>
         <div class="grid">
           <label for="T">技術門檻整體評分</label>
-          <input type="number" id="T" min="0" max="100" value="0">
+          <input type="number" id="T" min="0" max="30" step="0.01" value="0">
         </div>
       </section>
 
       <section class="block" id="secF">
-        <header><h3>四、財務狀況 <span class="badge">10%</span></h3></header>
+        <header><h3>四、財務狀況 <span class="badge">上限10分</span></h3></header>
         <div class="grid">
           <label for="F">財務狀況整體評分</label>
-          <input type="number" id="F" min="0" max="100" value="0">
+          <input type="number" id="F" min="0" max="30" step="0.01" value="0">
         </div>
       </section>
 
       <section class="block" id="secE">
-        <header><h3>五、經營團隊 <span class="badge">10%</span></h3></header>
+        <header><h3>五、經營團隊 <span class="badge">上限10分</span></h3></header>
         <div class="grid">
           <label for="E">經營團隊整體評分</label>
-          <input type="number" id="E" min="0" max="100" value="0">
+          <input type="number" id="E" min="0" max="30" step="0.01" value="0">
         </div>
       </section>
     </div>
@@ -255,15 +255,31 @@
 
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbxYonZdwpJqFYEpwNqci1zpiAk6T7JgtyLeqP3ICRr-w-RukYAKzp_1L1Ngu42x8vhb/exec';
-    const W = { I: 0.30, M: 0.30, T: 0.20, F: 0.10, E: 0.10 };
+    const LIMITS = { I:30, M:30, T:20, F:10, E:10 };
     const $ = q => document.querySelector(q);
     const params = new URLSearchParams(location.search);
     const JUDGE = decodeURIComponent(params.get('judge')||'').trim();
     const IDS = ['I', 'M', 'T', 'F', 'E'];
     const els = IDS.map(id=>document.getElementById(id));
-  
+
+    IDS.forEach(id=>{
+    const el = document.getElementById(id);
+    el.min = 0;                 // 不允許負數
+    el.max = LIMITS[id];        // 各欄上限：30/30/20/10/10
+    el.step = '0.01';           // 兩位小數步進與驗證網格
+    });
+    
     function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; } // [說明文字，不需引用]
-    function liveTotal(){ let t=0; els.forEach(el=>{const v=Number(el.value||0); if(!isNaN(v)) t += v * (W[el.id]||0);}); $('#liveTotal').textContent=t.toFixed(2); return t; } // [說明文字，不需引用]
+    function liveTotal(){
+      let t=0;
+      els.forEach(el=>{
+        const v = Number(el.value || 0);
+        if (!isNaN(v)) t += v;
+      });
+      $('#liveTotal').textContent = t.toFixed(2);
+      return t;
+    }
+    
     function buildProjectOptionText(p){ return `${p.id}｜${p.team}${p.hasScore?'（已評分）':''}`; } // [說明文字，不需引用]
   
     function jsonp(params){
@@ -326,49 +342,49 @@
         // 靜默失敗即可
       }
     }
-  
     async function save(){
-      const p = getSelectedProject(); const btn=$('#btnSave');
-      if(!p) return toast('請先選擇團隊', false);
-      const scores={};
-      els.forEach(el=>{
-        const n=Number(el.value||0);
-        if(isNaN(n)||n<0||n>100) throw new Error('每項需為 0~100');
-        scores[el.id]=n;
-      });
-      const body = {
-        action:'save',
-        data: JSON.stringify({
-          judge:JUDGE,
-          projectId:p.id,
-          team:p.team,
-          vendor:p.vendor||'',
-          scores,
-          comment:$('#comment').value.trim()
-        })
-      };
-      btn.disabled=true; btn.textContent='送出中…';
-      try{
-        const res = await apiPOST(body);
-        if (!res || res.ok === false) { throw new Error(res?.error || '後端回傳失敗'); }
-        const total = Number(res.total);
-        if (!Number.isFinite(total)) { throw new Error('後端未回傳總分（total）。請檢查後端 save_ 回傳。'); }
-        toast(`已送出，總分 ${total.toFixed(2)}`);
-        p.hasScore = true;
-        
-        // 修正：指向第一個被選取的 <option> 並更新其文字，顯示（已評分）
-        const sel = $('#project');
-        const opt = sel.selectedOptions && sel.selectedOptions; // HTMLCollection 取第 0 個
-        if (opt) opt.textContent = buildProjectOptionText(p);      // 更新顯示文字
-
-        // 送出後檢查是否已評完所有公司，若評完則自動彈出最終確認
-        checkAndPromptFinal('save');
-      }catch(e){
-        toast(e.message || '送出失敗', false);
-      }finally{
-        btn.disabled=false; btn.textContent='送出評分';
-      }
+    const p = getSelectedProject(); const btn=$('#btnSave');
+    if(!p) return toast('請先選擇團隊', false);
+    const scores={};
+    els.forEach(el=>{
+      const n = Number(el.value || 0);
+      if (!Number.isFinite(n)) throw new Error('請輸入數字');
+      const max = LIMITS[el.id] || 0;
+      if (n < 0 || n > max) throw new Error(`「${el.id}」需介於 0 ~ ${max}`);
+      // 前端也可先裁兩位，避免浮點誤差
+      scores[el.id] = Math.round(n * 100) / 100;
+    });
+  
+    const body = {
+      action:'save',
+      data: JSON.stringify({
+        judge:JUDGE,
+        projectId:p.id,
+        team:p.team,
+        vendor:p.vendor||'',
+        scores,
+        comment:$('#comment').value.trim()
+      })
+    };
+  
+    btn.disabled=true; btn.textContent='送出中…';
+    try{
+      const res = await apiPOST(body);
+      if (!res || res.ok === false) { throw new Error(res?.error || '後端回傳失敗'); }
+      const total = Number(res.total);
+      if (!Number.isFinite(total)) { throw new Error('後端未回傳總分（total）。請檢查後端 save_ 回傳。'); }
+      toast(`已送出，總分 ${total.toFixed(2)}`);
+      p.hasScore = true;
+      const sel = $('#project');
+      const opt = sel.selectedOptions && sel.selectedOptions[0];
+      if (opt) opt.textContent = buildProjectOptionText(p);
+      checkAndPromptFinal('save');
+    }catch(e){
+      toast(e.message || '送出失敗', false);
+    }finally{
+      btn.disabled=false; btn.textContent='送出評分';
     }
+  }
   
 function renderMyList(items){
   const box = document.getElementById('myList');
