@@ -175,7 +175,7 @@
         <header><h3>三、技術門檻 <span class="badge">上限20分</span></h3></header>
         <div class="grid">
           <label for="T">技術門檻整體評分</label>
-          <input type="number" id="T" min="0" max="30" step="0.01" value="0">
+          <input type="number" id="T" min="0" max="20" step="0.01" value="0">
         </div>
       </section>
 
@@ -183,7 +183,7 @@
         <header><h3>四、財務狀況 <span class="badge">上限10分</span></h3></header>
         <div class="grid">
           <label for="F">財務狀況整體評分</label>
-          <input type="number" id="F" min="0" max="30" step="0.01" value="0">
+          <input type="number" id="F" min="0" max="10" step="0.01" value="0">
         </div>
       </section>
 
@@ -191,7 +191,7 @@
         <header><h3>五、經營團隊 <span class="badge">上限10分</span></h3></header>
         <div class="grid">
           <label for="E">經營團隊整體評分</label>
-          <input type="number" id="E" min="0" max="30" step="0.01" value="0">
+          <input type="number" id="E" min="0" max="10" step="0.01" value="0">
         </div>
       </section>
     </div>
@@ -256,6 +256,14 @@
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbxYonZdwpJqFYEpwNqci1zpiAk6T7JgtyLeqP3ICRr-w-RukYAKzp_1L1Ngu42x8vhb/exec';
     const LIMITS = { I:30, M:30, T:20, F:10, E:10 };
+    // 建議放這裡（常數區）
+    const NAMES = {
+      I:'產品創新與行銷',
+      M:'市場需求與規模',
+      T:'技術門檻',
+      F:'財務狀況',
+      E:'經營團隊'
+    };
     const $ = q => document.querySelector(q);
     const params = new URLSearchParams(location.search);
     const JUDGE = decodeURIComponent(params.get('judge')||'').trim();
@@ -348,10 +356,23 @@
     const scores={};
     els.forEach(el=>{
       const n = Number(el.value || 0);
-      if (!Number.isFinite(n)) throw new Error('請輸入數字');
+      const name = NAMES[el.id] || el.id;
       const max = LIMITS[el.id] || 0;
-      if (n < 0 || n > max) throw new Error(`「${el.id}」需介於 0 ~ ${max}`);
-      // 前端也可先裁兩位，避免浮點誤差
+    
+      if (!Number.isFinite(n)) {
+        el.setCustomValidity(`「${name}」請輸入數字`);
+        el.reportValidity();
+        el.focus();
+        throw new Error(`「${name}」請輸入數字`);
+      }
+    
+      if (n < 0 || n > max) {
+        el.setCustomValidity(`「${name}」需介於 0 ~ ${max}`);
+        el.reportValidity();
+        el.focus();
+        throw new Error(`「${name}」需介於 0 ~ ${max}`);
+      }
+      el.setCustomValidity(''); // 當前數值通過檢核就清除自訂錯誤，避免殘留
       scores[el.id] = Math.round(n * 100) / 100;
     });
   
@@ -561,6 +582,10 @@ function renderMyList(items){
   
     // 綁定事件
     els.forEach(el=> el.addEventListener('input', liveTotal)); // 推薦以 addEventListener 綁定事件
+    // 在這裡加入清除自訂錯誤
+    els.forEach(el=>{
+      el.addEventListener('input', ()=> el.setCustomValidity(''));
+    });
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     document.getElementById('btnList').addEventListener('click', ()=>{ loadMyScores().catch(()=>toast('讀取失敗', false)); });
