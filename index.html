@@ -370,65 +370,83 @@
       }
     }
   
-    function renderMyList(items){
-      const box = document.getElementById('myList');
-      const body = document.getElementById('myListBody');
-      if(!items || !items.length){
-        body.innerHTML = '<div class="muted">尚無評分紀錄</div>';
-        box.style.display = '';
-        return;
-      }
-      const rows = items.map(it=>{
-        const time = it.updatedAt ? new Date(it.updatedAt) : null;
-        const timeStr = time ? time.toLocaleString('zh-TW') : '';
-        return `
-          <tr>
-            <td>${it.projectId}</td>
-            <td>${it.team||''}</td>
-            <td style="text-align:right">${(it.total??'').toString()}</td>
-            <td>${timeStr}</td>
-            <td><button class="ghost" data-pid="${it.projectId}">檢視</button></td>
-          </tr>`;
-      }).join('');
-      body.innerHTML = `
-        <div style="overflow:auto">
-          <table style="width:100%; border-collapse:collapse">
-            <thead>
-              <tr>
-                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">報名編號</th>
-                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">隊伍名稱</th>
-                <th style="text-align:right;border-bottom:1px solid var(--border); padding:6px 4px">總分</th>
-                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">最後更新</th>
-                <th style="text-align:left; border-bottom:1px solid var(--border); padding:6px 4px">操作</th>
-              </tr>
-            </thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      `;
-      box.style.display = '';
-      body.querySelectorAll('button[data-pid]').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const pid = btn.getAttribute('data-pid');
-          const sel = document.getElementById('project');
-          let found = null;
-          [...sel.options].forEach(opt=>{
-            if(!opt.value) return;
-            const p = JSON.parse(opt.value);
-            if (String(p.id) === String(pid)) found = opt;
-          });
-          if(found){
-            sel.value = found.value;
-            resetScores();
-            loadLast().catch(()=>{});
-            toast(`已切換至 ${pid}，並載入上一筆評分`);
-            window.scrollTo({ top:0, behavior:'smooth' });
-          }else{
-            toast(`名單中找不到編號 ${pid}（可能未在「比賽隊伍列表」）`, false);
-          }
-        });
-      });
+function renderMyList(items){
+  const box = document.getElementById('myList');
+  const body = document.getElementById('myListBody');
+  if(!items || !items.length){
+    body.innerHTML = '<div class="muted">尚無評分紀錄</div>';
+    box.style.display = '';
+    return;
+  }
+  // 1. 排序
+  const data = [...items].sort((a,b)=> Number(b.total)-Number(a.total));
+  // 2. 算排名
+  let lastScore = null, lastRank = 0, realRank = 0;
+  for(let i=0;i<data.length;i++){
+    realRank++;
+    if(data[i].total===lastScore){
+      data[i].rank = lastRank; // 同分並列
+    } else {
+      data[i].rank = realRank;
+      lastRank = realRank;
+      lastScore = data[i].total;
     }
+  }
+  // 3. 顯示
+  const rows = data.map(it=>{
+    const time = it.updatedAt ? new Date(it.updatedAt) : null;
+    const timeStr = time ? time.toLocaleString('zh-TW') : '';
+    return `
+      <tr>
+        <td>${it.projectId}</td>
+        <td>${it.team||''}</td>
+        <td style="text-align:right">${(it.total??'').toString()}</td>
+        <td style="text-align:center">${it.rank}</td>
+        <td style="text-align:left">${timeStr}</td>
+        <td><button class="ghost" data-pid="${it.projectId}">檢視</button></td>
+      </tr>`;
+  }).join('');
+  body.innerHTML = `
+    <div style="overflow:auto">
+      <table style="width:100%; border-collapse:collapse">
+        <thead>
+          <tr>
+            <th style="text-align:left;">報名編號</th>
+            <th style="text-align:left;">隊伍名稱</th>
+            <th style="text-align:right;">總分</th>
+            <th style="text-align:center;">名次</th>
+            <th style="text-align:left;">最後更新</th>
+            <th style="text-align:left;">操作</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+  box.style.display = '';
+  body.querySelectorAll('button[data-pid]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const pid = btn.getAttribute('data-pid');
+      const sel = document.getElementById('project');
+      let found = null;
+      [...sel.options].forEach(opt=>{
+        if(!opt.value) return;
+        const p = JSON.parse(opt.value);
+        if (String(p.id) === String(pid)) found = opt;
+      });
+      if(found){
+        sel.value = found.value;
+        resetScores();
+        loadLast().catch(()=>{});
+        toast(`已切換至 ${pid}，並載入上一筆評分`);
+        window.scrollTo({ top:0, behavior:'smooth' });
+      }else{
+        toast(`名單中找不到編號 ${pid}（可能未在「比賽隊伍列表」）`, false);
+      }
+    });
+  });
+}
+
   
     async function loadMyScores(){
       const res = await apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`);
