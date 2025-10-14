@@ -116,16 +116,27 @@
     }
     /* ===== 新增：表格欄距與標題放大 ===== */
 
-    /* 我的評分總覽：拉開「總分」與「最後更新」距離 */
+
+    /* 我的評分總覽：總分(3)、名次(4)、最後更新(5)、操作(6) */
     #myList table{ table-layout: fixed; } /* 固定表格布局便於控制欄寬 */
     #myList th:nth-child(3), #myList td:nth-child(3){ width: 90px; padding-right: 12px; text-align: right; }
-    #myList th:nth-child(4), #myList td:nth-child(4){ min-width: 220px; padding-left: 16px; } /* 讓「最後更新」更靠右 */
-    #myList th:nth-child(5), #myList td:nth-child(5){ padding-left: 16px; } /* 與「操作」保留安全距離 */
+    #myList th:nth-child(5), #myList td:nth-child(5){ min-width: 220px; padding-left: 16px; } /* 最後更新 */
+    #myList th:nth-child(6), #myList td:nth-child(6){ padding-left: 16px; } /* 操作 */
+
     
-    /* 最終確認彈窗表格：同樣優化「總分 / 最後更新」距離 */
+
+    /* 最終確認彈窗表格：總分(3)、名次(4)、最後更新(5) */
     #finalTableWrap table{ table-layout: fixed; }
-    #finalTableWrap th:nth-child(3), #finalTableWrap td:nth-child(3){ width: 90px; padding-right: 12px; text-align: right; }
-    #finalTableWrap th:nth-child(4), #finalTableWrap td:nth-child(4){ min-width: 220px; padding-left: 16px; }
+    #finalTableWrap th:nth-child(3), #finalTableWrap td:nth-child(3){
+      width: 90px; padding-right: 12px; text-align: right;
+    }
+    #finalTableWrap th:nth-child(4), #finalTableWrap td:nth-child(4){
+      width: 70px; text-align: center;
+    }
+    #finalTableWrap th:nth-child(5), #finalTableWrap td:nth-child(5){
+      min-width: 220px; padding-left: 16px;
+    }
+
     
     /* 放大評選委員名字與提示行 */
     #title{ font-size: 28px; }
@@ -421,8 +432,15 @@ function renderMyList(items){
     box.style.display = '';
     return;
   }
-  // 1. 排序
-  const data = [...items].sort((a,b)=> Number(b.total)-Number(a.total));
+
+  // 1. 排序（改這一行）
+  const data = [...items]
+    .sort((a,b)=>{
+      const ax = Number.isFinite(Number(a.total)) ? Number(a.total) : -Infinity;
+      const bx = Number.isFinite(Number(b.total)) ? Number(b.total) : -Infinity;
+      return bx - ax; // 總分遞減
+    });
+
   // 2. 算排名
   let lastScore = null, lastRank = 0, realRank = 0;
   for(let i=0;i<data.length;i++){
@@ -500,50 +518,121 @@ function renderMyList(items){
       const d = await apiGET(`action=init&judge=${encodeURIComponent(JUDGE)}`);
       return (d.projects || []).length;
     }
+
+  function computeSortedWithRank(items){
+  const data = [...(items||[])]
+    .map(it => {
+      const totalNum = Number(it.total);
+      const updatedAtStr = it.updatedAt ? new Date(it.updatedAt).toLocaleString('zh-TW') : '';
+      return { ...it, totalNum, updatedAtStr };
+    })
+    
+    //避免比較結果是 NaN 造成不穩定排序或名次錯誤，符合 sort 比較函式需回傳正負值或 0 的規範 。
+    .sort((a,b)=>{
+      const ax = Number.isFinite(a.totalNum) ? a.totalNum : -Infinity;
+      const bx = Number.isFinite(b.totalNum) ? b.totalNum : -Infinity;
+      return bx - ax; // 總分遞減
+    });
+  let lastScore = null, lastRank = 0, realRank = 0;
+  data.forEach(it => {
+    realRank++;
+    if (it.totalNum === lastScore){
+      it.rank = lastRank;     // 同分並列
+    }else{
+      it.rank = realRank;
+      lastRank = realRank;
+      lastScore = it.totalNum;
+    }
+  });
+  return data;
+}
+
   
-    // 強化：最終確認彈窗，要求勾選聲明才可送出
-    async function openFinalModal(){
-      const modal = document.getElementById('finalModal');
-      const tbody = document.getElementById('finalTbody');
-      const hint  = document.getElementById('finalHint');
-      const msg   = document.getElementById('finalMsg');
-      const chk   = document.getElementById('finalCheck');
-      const btnSubmit = document.getElementById('finalSubmit');
+  // 強化：最終確認彈窗，要求勾選聲明才可送出
+  async function openFinalModal(){
+    const modal = document.getElementById('finalModal');
+    const tbody = document.getElementById('finalTbody');
+    const hint  = document.getElementById('finalHint');
+    const msg   = document.getElementById('finalMsg');
+    const chk   = document.getElementById('finalCheck');
+    const btnSubmit = document.getElementById('finalSubmit');
   
-      msg.textContent = '';
-      chk.checked = false;
-      tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">讀取中…</td></tr>';
-      modal.style.display = 'flex';
+    msg.textContent = '';
+    chk.checked = false;
+    modal.style.display = 'flex';
+    tbody.innerHTML = `
+      <tr><td colspan="6" style="padding:12px">讀取中…</td></tr>
+    `;
   
-      const [listRes, totalCount] = await Promise.all([
-        apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
-        fetchAllProjectsCount()
-      ]);
-      const items = listRes.items || [];
-      if (!items.length){
-        tbody.innerHTML = '<tr><td colspan="4" style="padding:12px">尚無評分紀錄</td></tr>';
-      }else{
-        tbody.innerHTML = items.map(it=>{
-          const time = it.updatedAt ? new Date(it.updatedAt) : null;
-          const timeStr = time ? time.toLocaleString('zh-TW') : '';
-          const totalStr = (it.total!==undefined && it.total!==null) ? Number(it.total).toFixed(2) : '';
-          return `<tr>
+    const [listRes, totalCount] = await Promise.all([
+      apiGET(`action=list&judge=${encodeURIComponent(JUDGE)}`),
+      fetchAllProjectsCount()
+    ]);
+  
+    const rawItems = listRes.items || [];
+    const data = computeSortedWithRank(rawItems);
+  
+    if (!data.length){
+      tbody.innerHTML = '<tr><td colspan="6" style="padding:12px">尚無評分紀錄</td></tr>';
+    }else{
+      const thead = tbody.parentElement.querySelector('thead tr');
+      thead.innerHTML = `
+        <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">簡報順序</th>
+        <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">隊伍名稱</th>
+        <th style="text-align:right;border-bottom:1px solid #e5e7eb;padding:8px">總分</th>
+        <th style="text-align:center;border-bottom:1px solid #e5e7eb;padding:8px">名次</th>
+        <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">最後更新</th>
+        <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">操作</th>
+      `;
+      tbody.innerHTML = data.map(it=>{
+        const totalStr = Number.isFinite(it.totalNum) ? it.totalNum.toFixed(2) : '';
+        return `
+          <tr>
             <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.projectId}</td>
             <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.team||''}</td>
             <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:right">${totalStr}</td>
-            <td style="padding:8px;border-bottom:1px solid #e5e7eb">${timeStr}</td>
-          </tr>`;
-        }).join('');
-      }
-      hint.innerHTML = `已評隊伍數：<b>${items.length}</b>／全部隊伍數：<b>${totalCount}</b>。${items.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
-  
-      // 只有在「已評完」且「勾選確認」後才可送出
-      const syncSubmitDisabled = ()=>{
-        btnSubmit.disabled = (items.length < totalCount) || !chk.checked;
-      };
-      chk.onchange = syncSubmitDisabled; // 使用事件監聽以即時更新按鈕可用性
-      syncSubmitDisabled(); // 初始同步
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:center">${it.rank}</td>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.updatedAtStr}</td>
+            <td style="padding:8px;border-bottom:1px solid #e5e7eb">
+              <button class="ghost" data-pid="${it.projectId}">檢視</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
     }
+
+  hint.innerHTML = `已評隊伍數：<b>${rawItems.length}</b>／全部隊伍數：<b>${totalCount}</b>。${rawItems.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
+
+  tbody.querySelectorAll('button[data-pid]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const pid = btn.getAttribute('data-pid');
+      const sel = document.getElementById('project');
+      let found = null;
+      [...sel.options].forEach(opt=>{
+        if(!opt.value) return;
+        const p = JSON.parse(opt.value);
+        if (String(p.id) === String(pid)) found = opt;
+      });
+      if(found){
+        sel.value = found.value;
+        resetScores();
+        loadLast().catch(()=>{});
+        toast(`已切換至 ${pid}，並載入上一筆評分`);
+        // document.getElementById('finalModal').style.display='none';
+        window.scrollTo({ top:0, behavior:'smooth' });
+      }else{
+        toast(`名單中找不到編號 ${pid}（可能未在「比賽隊伍列表」）`, false);
+      }
+    });
+  });
+
+  const syncSubmitDisabled = ()=>{
+    btnSubmit.disabled = (rawItems.length < totalCount) || !chk.checked;
+  };
+  chk.onchange = syncSubmitDisabled;
+  syncSubmitDisabled();
+}
+
   
     // 嘗試以多步驟方式關閉視窗（瀏覽器僅允許腳本關閉由腳本開啟的分頁）
     function closeWindowGracefully(){
