@@ -258,7 +258,8 @@
     //const API_URL = 'https://script.google.com/macros/s/AKfycby4ySNKWJsDz73Wz2lsT9_tNYIACM4U-K7oDm4twjrg20tdDzDqanVNDyLEwX9rBP5Y/exec';//39 版--17版改成上限表頭&加總
     //const API_URL = 'https://script.google.com/macros/s/AKfycby4ySNKWJsDz73Wz2lsT9_tNYIACM4U-K7oDm4twjrg20tdDzDqanVNDyLEwX9rBP5Y/exec';//41版--新39版改成加總
     //const API_URL = 'https://script.google.com/macros/s/AKfycby4ySNKWJsDz73Wz2lsT9_tNYIACM4U-K7oDm4twjrg20tdDzDqanVNDyLEwX9rBP5Y/exec';//42版--17版加權和上限沒問題版改成加總版本
-    const API_URL = 'https://script.google.com/macros/s/AKfycby4ySNKWJsDz73Wz2lsT9_tNYIACM4U-K7oDm4twjrg20tdDzDqanVNDyLEwX9rBP5Y/exec';//43版--報名編號改成簡報順序
+    //const API_URL = 'https://script.google.com/macros/s/AKfycby4ySNKWJsDz73Wz2lsT9_tNYIACM4U-K7oDm4twjrg20tdDzDqanVNDyLEwX9rBP5Y/exec';//43版--報名編號改成簡報順序
+    const API_URL = 'https://script.google.com/macros/s/AKfycby4ySNKWJsDz73Wz2lsT9_tNYIACM4U-K7oDm4twjrg20tdDzDqanVNDyLEwX9rBP5Y/exec';//44版--刪除主提案廠商
     //const API_URL = 'https://script.google.com/macros/s/AKfycbyZHGloV_TZ2Idh0I9-gG2td1TNXgWmC2DHCTwlJt0FVkJFZQbpKiCc-c07s-z3f8Tv/exec';//新39 版--17版改成上限表頭(只差在仍是加權)
     
     const LIMITS = { I:30, M:30, T:20, F:10, E:10 };
@@ -388,7 +389,6 @@
         judge:JUDGE,
         projectId:p.id,
         team:p.team,
-        vendor:p.vendor||'',
         scores,
         comment:$('#comment').value.trim()
       })
