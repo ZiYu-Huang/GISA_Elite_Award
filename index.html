@@ -153,7 +153,7 @@
 
   <div class="wrap">
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub"><span class="hint">每個構面分別有上限 30、30、20、10、10分，可輸入到小數點後兩位，滿分 100 分。</span></div>
+    <div class="sub"><span class="hint">各構面輸入分別有上限 30、30、20、10、10分，可輸入到小數點後兩位。</span></div>
 
     <div class="row">
       <label for="project">受評公司</label>
@@ -220,7 +220,7 @@
     <section class="block" id="myList" style="display:none">
       <header>
         <h3>我的評分總覽</h3>
-        <span class="muted">點「檢視」可切換並載入該隊上一筆評分</span>
+        <span class="muted">按一下「檢視」，即可切換至您對該公司的上一次評分紀錄，並進行修改。</span>
       </header>
       <div id="myListBody" style="padding:14px"></div>
     </section>
@@ -243,7 +243,9 @@
                   <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">簡報順序</th>
                   <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">隊伍名稱</th>
                   <th style="text-align:right;border-bottom:1px solid #e5e7eb;padding:8px">總分</th>
+                  <th style="text-align:center;border-bottom:1px solid #e5e7eb;padding:8px">名次</th>
                   <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">最後更新</th>
+                  <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">操作</th>
                 </tr>
               </thead>
               <tbody id="finalTbody"></tbody>
@@ -455,18 +457,20 @@ function renderMyList(items){
   }
   // 3. 顯示
   const rows = data.map(it=>{
-    const time = it.updatedAt ? new Date(it.updatedAt) : null;
-    const timeStr = time ? time.toLocaleString('zh-TW') : '';
-    return `
-      <tr>
-        <td>${it.projectId}</td>
-        <td>${it.team||''}</td>
-        <td style="text-align:right">${(it.total??'').toString()}</td>
-        <td style="text-align:center">${it.rank}</td>
-        <td style="text-align:left">${timeStr}</td>
-        <td><button class="ghost" data-pid="${it.projectId}">檢視</button></td>
-      </tr>`;
-  }).join('');
+  const time = it.updatedAt ? new Date(it.updatedAt) : null;
+  const timeStr = time ? time.toLocaleString('zh-TW') : '';
+  const totalStr = Number.isFinite(Number(it.total)) ? Number(it.total).toFixed(2) : ''; // 固定兩位小數或空字串
+  return `
+    <tr>
+      <td>${it.projectId}</td>
+      <td>${it.team||''}</td>
+      <td style="text-align:right">${totalStr}</td>
+      <td style="text-align:center">${it.rank}</td>
+      <td style="text-align:left">${timeStr}</td>
+      <td><button class="ghost" data-pid="${it.projectId}">檢視</button></td>
+    </tr>`;
+}).join('');
+
   body.innerHTML = `
     <div style="overflow:auto">
       <table style="width:100%; border-collapse:collapse">
@@ -571,19 +575,13 @@ function renderMyList(items){
   
     const rawItems = listRes.items || [];
     const data = computeSortedWithRank(rawItems);
-  
+
+
     if (!data.length){
       tbody.innerHTML = '<tr><td colspan="6" style="padding:12px">尚無評分紀錄</td></tr>';
     }else{
       const thead = tbody.parentElement.querySelector('thead tr');
-      thead.innerHTML = `
-        <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">簡報順序</th>
-        <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">隊伍名稱</th>
-        <th style="text-align:right;border-bottom:1px solid #e5e7eb;padding:8px">總分</th>
-        <th style="text-align:center;border-bottom:1px solid #e5e7eb;padding:8px">名次</th>
-        <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">最後更新</th>
-        <th style="text-align:left;border-bottom:1px solid #e5e7eb;padding:8px">操作</th>
-      `;
+      
       tbody.innerHTML = data.map(it=>{
         const totalStr = Number.isFinite(it.totalNum) ? it.totalNum.toFixed(2) : '';
         return `
@@ -594,37 +592,47 @@ function renderMyList(items){
             <td style="padding:8px;border-bottom:1px solid #e5e7eb;text-align:center">${it.rank}</td>
             <td style="padding:8px;border-bottom:1px solid #e5e7eb">${it.updatedAtStr}</td>
             <td style="padding:8px;border-bottom:1px solid #e5e7eb">
-              <button class="ghost" data-pid="${it.projectId}">檢視</button>
+              <button class="ghost" data-pid="${it.projectId}">修改</button>
             </td>
           </tr>
         `;
       }).join('');
+
+
     }
 
   hint.innerHTML = `已評隊伍數：<b>${rawItems.length}</b>／全部隊伍數：<b>${totalCount}</b>。${rawItems.length<totalCount ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
 
   tbody.querySelectorAll('button[data-pid]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const pid = btn.getAttribute('data-pid');
-      const sel = document.getElementById('project');
-      let found = null;
-      [...sel.options].forEach(opt=>{
-        if(!opt.value) return;
+  btn.addEventListener('click', ()=>{
+    const pid = btn.getAttribute('data-pid');
+    const sel = document.getElementById('project');
+    let found = null;
+
+    // 尋找對應的 <option>
+    for (const opt of sel.options) {
+      if (!opt.value) continue;
+      try {
         const p = JSON.parse(opt.value);
-        if (String(p.id) === String(pid)) found = opt;
-      });
-      if(found){
-        sel.value = found.value;
-        resetScores();
-        loadLast().catch(()=>{});
-        toast(`已切換至 ${pid}，並載入上一筆評分`);
-        // document.getElementById('finalModal').style.display='none';
-        window.scrollTo({ top:0, behavior:'smooth' });
-      }else{
-        toast(`名單中找不到編號 ${pid}（可能未在「比賽隊伍列表」）`, false);
+        if (String(p.id) === String(pid)) { found = opt; break; }
+      } catch(e) {
+        // 忽略 JSON 解析失敗
       }
-    });
+    }
+
+    if (found) {
+      sel.value = found.value;   // 切換到該隊
+      resetScores();             // 清空目前輸入
+      loadLast().catch(()=>{});  // 載入上一筆評分
+      toast(`已切換至 ${pid}，並載入上一筆評分`);
+      modal.style.display = 'none'; // 關閉彈窗
+      window.scrollTo({ top: 0, behavior: 'smooth' }); // 捲回表單頂部
+    } else {
+      toast(`名單中找不到編號 ${pid}（可能未在「比賽隊伍列表」）`, false);
+    }
   });
+});
+
 
   const syncSubmitDisabled = ()=>{
     btnSubmit.disabled = (rawItems.length < totalCount) || !chk.checked;
