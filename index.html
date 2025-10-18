@@ -279,13 +279,60 @@
       const el = document.getElementById(id);
       el.min = 0; el.max = LIMITS[id]; el.step = '0.01';
     });
+    
+    // （新增）改善輸入體驗（行動裝置顯示含小數點鍵盤）
+    IDS.forEach(id=>{
+      const el = document.getElementById(id);
+      el.setAttribute('inputmode', 'decimal'); // 僅提示鍵盤，不會強制驗證
+    });
 
+    // （新增）檢查單一欄位，設定自訂錯誤
+    function validateField(el){
+      const name = NAMES[el.id] || el.id;
+      const max  = LIMITS[el.id] || 0;
+      el.setCustomValidity('');
+    
+      if (el.validity.badInput) {
+        el.setCustomValidity(`「${name}」請輸入數字`);
+        return false;
+      }
+    
+      const n = Number.parseFloat(el.value);
+      if (!Number.isFinite(n)) {
+        el.setCustomValidity(`「${name}」請輸入數字`);
+        return false;
+      }
+    
+      if (n < 0 || n > max) {
+        el.setCustomValidity(`「${name}」需介於 0 ~ ${max}`);
+        return false;
+      }
+      return true;
+    }
+    
+    // （新增）統一檢查所有欄位並同步送出按鈕狀態
+    function validateAll(){
+      let ok = true;
+      for (const el of els){
+        const good = validateField(el);
+        if (!good) ok = false;
+      }
+      $('#btnSave').disabled = !ok;
+      return ok;
+    }
+
+    
+    // （修改）即時計分避免將無效輸入當成 0
     function liveTotal(){
-      let t=0;
-      els.forEach(el=>{ const v=Number(el.value||0); if(!isNaN(v)) t+=v; });
-      $('#liveTotal').textContent = t.toFixed(2);
+      let t = 0;
+      els.forEach(el=>{
+        const v = Number.parseFloat(el.value);
+        if (Number.isFinite(v)) t += v;
+      });
+      $('#liveTotal').textContent = (Math.round(t * 100) / 100).toFixed(2);
       return t;
     }
+
     function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
     function getSelectedProject(){
       const sel = $('#project'); const pid = sel.value;
@@ -508,22 +555,32 @@
     async function save(){
       const p = getSelectedProject(); const btn=$('#btnSave');
       if(!p) return toast('請先選擇團隊', false);
-      const scores={};
-      els.forEach(el=>{
-        const n = Number(el.value || 0);
-        const name = NAMES[el.id] || el.id;
-        const max = LIMITS[el.id] || 0;
-        if (!Number.isFinite(n)){
-          el.setCustomValidity(`「${name}」請輸入數字`);
-          el.reportValidity(); el.focus(); throw new Error(`「${name}」請輸入數字`);
-        }
-        if (n < 0 || n > max){
-          el.setCustomValidity(`「${name}」需介於 0 ~ ${max}`);
-          el.reportValidity(); el.focus(); throw new Error(`「${name}」需介於 0 ~ ${max}`);
-        }
-        el.setCustomValidity('');
-        scores[el.id] = Math.round(n * 100) / 100;
-      });
+      // === 新增：整體檢核與聚焦第一個無效欄位 ===
+      if (!validateAll()){
+        const firstBad = els.find(el => !el.checkValidity());
+        if (firstBad){ firstBad.reportValidity(); firstBad.focus(); }
+        return;
+      }
+    const scores = {};
+    els.forEach(el=>{
+      const n = Number.parseFloat(el.value);
+      const name = NAMES[el.id] || el.id;
+      const max  = LIMITS[el.id] || 0;
+  
+      if (!Number.isFinite(n)){
+        el.setCustomValidity(`「${name}」請輸入數字`);
+        el.reportValidity(); el.focus(); throw new Error(`「${name}」請輸入數字`);
+      }
+      if (n < 0 || n > max){
+        el.setCustomValidity(`「${name}」需介於 0 ~ ${max}`);
+        el.reportValidity(); el.focus(); throw new Error(`「${name}」需介於 0 ~ ${max}`);
+      }
+      el.setCustomValidity('');
+  
+      const rounded = Math.round(n * 100) / 100; // 四捨五入兩位
+      el.value = rounded.toFixed(2);             // 回填兩位顯示字串
+      scores[el.id] = rounded;                   // 送出用數值
+    });
 
       const body = {
         action:'save',
@@ -535,7 +592,7 @@
           comment:$('#comment').value.trim()
         })
       };
-
+      
       btn.disabled=true; btn.textContent='送出中…';
       try{
         const res = await apiPOST(body);
@@ -594,8 +651,31 @@
     }
 
     // 綁定事件
-    els.forEach(el=> el.addEventListener('input', liveTotal));
-    els.forEach(el=> el.addEventListener('input', ()=> el.setCustomValidity('')));
+    // 輸入時即時驗證與更新總分，離焦時自動四捨五入兩位
+    els.forEach(el=>{
+      el.addEventListener('input', ()=>{
+        validateField(el);
+        el.reportValidity(); // 顯示提示泡泡
+        validateAll();
+        liveTotal();
+      });
+    
+      el.addEventListener('blur', ()=>{
+        const v = Number.parseFloat(el.value);
+        if (Number.isFinite(v)) {
+          const s = String(el.value || '');
+          const m = s.match(/\.(\d+)/);
+          if (m && m[1].length > 2) {
+            const rounded = Math.round(v * 100) / 100; // 四捨五入
+            el.value = rounded.toFixed(2);             // 兩位顯示
+          }
+        }
+        validateField(el);
+        validateAll();
+        liveTotal();
+      });
+    });
+
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     $('#btnList').addEventListener('click', ()=>{ getMyListCached().then(renderMyList).catch(()=>toast('讀取失敗', false)); });
