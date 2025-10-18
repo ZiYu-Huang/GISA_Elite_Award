@@ -231,7 +231,7 @@
             </label>
           </div>
           <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-            <button id="finalSubmit" class="primary">送出20家成績最終確認</button>
+            <button id="finalSubmit" class="primary">送出23家成績最終確認</button>
           </div>
           <div id="finalMsg" class="muted" style="margin-top:8px"></div>
         </div>
@@ -286,18 +286,26 @@
       el.setAttribute('inputmode', 'decimal'); // 僅提示鍵盤，不會強制驗證
     });
 
-    // （新增）檢查單一欄位，設定自訂錯誤
+
+    // 調整：空字串視為中性（不報錯）
     function validateField(el){
       const name = NAMES[el.id] || el.id;
       const max  = LIMITS[el.id] || 0;
       el.setCustomValidity('');
     
+      const raw = String(el.value ?? '');
+      if (raw.trim() === '') {
+        // 空值不顯示「請輸入數字」，保持中性狀態
+        return true;
+      }
+    
+      // 有輸入內容才檢查格式
       if (el.validity.badInput) {
         el.setCustomValidity(`「${name}」請輸入數字`);
         return false;
       }
     
-      const n = Number.parseFloat(el.value);
+      const n = Number.parseFloat(raw);
       if (!Number.isFinite(n)) {
         el.setCustomValidity(`「${name}」請輸入數字`);
         return false;
@@ -309,8 +317,10 @@
       }
       return true;
     }
+
+
     
-    // （新增）統一檢查所有欄位並同步送出按鈕狀態
+    // 統一檢查所有欄位並同步送出按鈕狀態
     function validateAll(){
       let ok = true;
       for (const el of els){
@@ -333,7 +343,13 @@
       return t;
     }
 
-    function resetScores(){ els.forEach(el=>el.value=0); $('#comment').value=''; liveTotal(); }
+    function resetScores(){
+    els.forEach(el=>{ el.value = 0; el.setCustomValidity(''); });
+    $('#comment').value='';
+    validateAll();
+    liveTotal();
+  }
+
     function getSelectedProject(){
       const sel = $('#project'); const pid = sel.value;
       if(!pid) return null;
@@ -369,15 +385,18 @@
       }
     }
 
-    function fillScores(map){
-      if(!map) return;
-      for(const id of IDS){
-        const el = document.getElementById(id);
-        const v = map[id] ?? 0;
-        el.value = v;
-      }
-      liveTotal();
+
+      function fillScores(map){
+    if(!map) return;
+    for(const id of IDS){
+      const el = document.getElementById(id);
+      const v = map[id] ?? 0;
+      el.value = v;
+      el.setCustomValidity('');
     }
+    validateAll();
+    liveTotal();
+  }
 
     async function loadLast(){
       const p = getSelectedProject(); if(!p) return toast('請先選擇團隊', false);
@@ -525,7 +544,7 @@
         }).join('');
       }
 
-      hint.innerHTML = `已評隊伍數：<b>${rawItems.length}</b>／全部隊伍數：<b>${TOTAL_PROJECTS}</b>。${rawItems.length<TOTAL_PROJECTS ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
+      hint.innerHTML = `已評隊伍數：<b>${rawItems.length}</b>／全部隊伍數：<b>${TOTAL_PROJECTS}</b>。${rawItems.length<TOTAL_PROJECTS ? '（尚未評完，不能送出23家成績最終確認）' : ''}`;
 
       tbody.querySelectorAll('button[data-pid]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
@@ -650,36 +669,44 @@
       }
     }
 
-    // 綁定事件
     // 輸入時即時驗證與更新總分，離焦時自動四捨五入兩位
+    // 事件綁定：input 不彈泡泡，blur / 送出才提示
     els.forEach(el=>{
       el.addEventListener('input', ()=>{
         validateField(el);
-        el.reportValidity(); // 顯示提示泡泡
+        // 不呼叫 el.reportValidity()，避免輸入中彈泡泡
         validateAll();
         liveTotal();
       });
     
       el.addEventListener('blur', ()=>{
+        // 先做你原本的兩位小數四捨五入（如有需要）
         const v = Number.parseFloat(el.value);
         if (Number.isFinite(v)) {
           const s = String(el.value || '');
           const m = s.match(/\.(\d+)/);
           if (m && m[1].length > 2) {
-            const rounded = Math.round(v * 100) / 100; // 四捨五入
-            el.value = rounded.toFixed(2);             // 兩位顯示
+            const rounded = Math.round(v * 100) / 100;
+            el.value = rounded.toFixed(2);
           }
         }
+        // blur 才提示
         validateField(el);
+        el.reportValidity();
         validateAll();
         liveTotal();
       });
     });
 
+
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
     $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
     $('#btnList').addEventListener('click', ()=>{ getMyListCached().then(renderMyList).catch(()=>toast('讀取失敗', false)); });
-    $('#project').addEventListener('change', ()=>{ resetScores(); toast('已切換團隊，請輸入新分數'); });
+    $('#project').addEventListener('change', ()=>{ 
+    resetScores(); 
+    validateAll();
+    toast('已切換團隊，請輸入新分數'); 
+  });
     $('#btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
     $('#finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
     $('#finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
