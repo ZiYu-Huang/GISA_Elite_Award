@@ -5,6 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>評分系統（五構面版）</title>
   <style>
+/* 新增：全局載入遮罩與小型按鈕轉圈 */
+.loading-backdrop {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.35); z-index: 99999; backdrop-filter: blur(2px);
+}
+.loading-backdrop[hidden] { display: none; }
+.loading-panel {
+  min-width: 220px; padding: 14px 16px; border-radius: 12px; border: 1px solid #e5e7eb; background: #fff;
+  display: flex; gap: 10px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,.2);
+}
+.spinner, .btn-spinner {
+  width: 20px; height: 20px; border: 2.5px solid #cbd5e1; border-top-color: #3b82f6; border-radius: 50%;
+  animation: spin .9s linear infinite;
+}
+.btn-spinner { width: 16px; height: 16px; margin-left: 8px; display: inline-block; vertical-align: -3px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+button.is-busy { pointer-events: none; opacity: .85; }
+
     :root{ 
       --bg: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #e0f2fe 100%);
       --card: #fff;
@@ -239,6 +257,14 @@
     </div>
   </div>
 
+    <!-- 新增：全局載入遮罩（一次即可） -->
+  <div id="loading" class="loading-backdrop" hidden aria-hidden="true" role="presentation">
+    <div class="loading-panel" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <div>處理中，請稍候…</div>
+    </div>
+  </div>
+  
   <script>
     // ==== 後端 Web App 入口（換成部署的網址）====
     const API_URL = 'https://script.google.com/macros/s/AKfycby4ySNKWJsDz73Wz2lsT9_tNYIACM4U-K7oDm4twjrg20tdDzDqanVNDyLEwX9rBP5Y/exec'; //46版--提升速度
@@ -257,7 +283,62 @@
     let LAST_LIST = { at: 0, items: [] }; // 60s 內重用
 
     function toast(msg, ok=true){ const m=$('#msg'); m.textContent=msg; m.style.color= ok?'#059669':'#b91c1c'; }
+    // 放在 jsonp 之前（新增）
+    let __loadingCount = 0, __loadingTimer = null;
+    function showGlobalLoading(delay=250){
+      if (__loadingCount++ === 0){
+        __loadingTimer = setTimeout(()=>{
+          let L = document.getElementById('loading');
+          if (!L){
+            // 動態建立 #loading 節點（若不存在）
+            L = document.createElement('div');
+            L.id = 'loading';
+            L.className = 'loading-backdrop';
+            L.setAttribute('hidden', 'true');
+            L.setAttribute('aria-hidden','true');
+            L.setAttribute('role','presentation');
+    
+            const panel = document.createElement('div');
+            panel.className = 'loading-panel';
+            panel.setAttribute('role','status');
+            panel.setAttribute('aria-live','polite');
+    
+            const spin = document.createElement('div');
+            spin.className = 'spinner';
+            spin.setAttribute('aria-hidden','true');
+    
+            const text = document.createElement('div');
+            text.textContent = '處理中，請稍候…';
+    
+            panel.appendChild(spin);
+            panel.appendChild(text);
+            L.appendChild(panel);
+            document.body.appendChild(L); // 加到 <body> 末尾
+          }
+          L.hidden = false;
+          L.setAttribute('aria-hidden','false');
+          document.body.setAttribute('aria-busy','true');
+        }, delay);
+      }
+    }
+
+
+    
+    function hideGlobalLoading(){
+      if (__loadingCount > 0 && --__loadingCount === 0){
+        if (__loadingTimer){ clearTimeout(__loadingTimer); __loadingTimer = null; }
+        const L = document.getElementById('loading');
+        if (L){
+          L.hidden = true;
+          L.setAttribute('aria-hidden','true');
+        }
+        document.body.setAttribute('aria-busy','false');
+      }
+    }
+    
+    // 替換原本的 jsonp
     function jsonp(params){
+      showGlobalLoading(250); // >0.25s 再顯示，避免閃爍
       return new Promise((resolve,reject)=>{
         const cb = 'cb_' + Math.random().toString(36).slice(2);
         window[cb] = (data)=>{ resolve(data); cleanup(); };
@@ -267,7 +348,10 @@
         s.src = API_URL + (API_URL.includes('?')?'&':'?') + qs.toString();
         s.onerror = ()=>{ reject(new Error('連線失敗（JSONP）')); cleanup(); };
         document.head.appendChild(s);
-        function cleanup(){ delete window[cb]; s.remove(); }
+        function cleanup(){
+          try{ delete window[cb]; s.remove(); }catch(e){}
+          hideGlobalLoading();
+        }
       });
     }
     async function apiGET(q){ const p = Object.fromEntries(new URLSearchParams(q)); return jsonp(p); }
@@ -318,6 +402,28 @@
       return true;
     }
 
+  // 新增：按鈕忙碌狀態工具
+  function setBusy(btn, busy=true, busyText=null){
+    if (!btn) return;
+    if (busy){
+      if (!btn.dataset.origText) btn.dataset.origText = btn.textContent || '';
+      btn.classList.add('is-busy');
+      if (busyText) btn.textContent = busyText;
+      if (!btn.querySelector('.btn-spinner')){
+        const sp = document.createElement('span');
+        sp.className = 'btn-spinner';
+        sp.setAttribute('aria-hidden','true');
+        btn.appendChild(sp);
+      }
+      btn.disabled = true;
+    }else{
+      btn.classList.remove('is-busy');
+      const sp = btn.querySelector('.btn-spinner');
+      if (sp) sp.remove();
+      if (btn.dataset.origText){ btn.textContent = btn.dataset.origText; delete btn.dataset.origText; }
+      btn.disabled = false;
+    }
+  }
 
     
     // 統一檢查所有欄位並同步送出按鈕狀態
@@ -612,7 +718,7 @@
         })
       };
       
-      btn.disabled=true; btn.textContent='送出中…';
+      setBusy(btn, true, '送出中…');
       try{
         const res = await apiPOST(body);
         if (!res || res.ok === false) { throw new Error(res?.error || '後端回傳失敗'); }
@@ -625,7 +731,7 @@
       }catch(e){
         toast(e.message || '送出失敗', false);
       }finally{
-        btn.disabled=false; btn.textContent='送出評分';
+        setBusy(btn, false);           // 新增：恢復按鈕
       }
     }
 
@@ -700,16 +806,65 @@
 
 
     $('#btnSave').addEventListener('click', ()=>{ save().catch(e=>toast(e.message||'送出失敗', false)); });
-    $('#btnLast').addEventListener('click', ()=>{ loadLast().catch(e=>toast(e.message||'讀取失敗', false)); });
-    $('#btnList').addEventListener('click', ()=>{ getMyListCached().then(renderMyList).catch(()=>toast('讀取失敗', false)); });
+    // 修改：查看上一筆（替換你原本的 $('#btnLast').addEventListener(...) ）
+    document.getElementById('btnLast').addEventListener('click', async ()=>{
+      const btn = document.getElementById('btnLast');
+      setBusy(btn, true, '讀取中…');           // 顯示小轉圈並停用按鈕
+      try{
+        await loadLast();                       // 保留你原本的讀取流程
+      }catch(e){
+        toast(e.message||'讀取失敗', false);    // 保留你原本的錯誤提示
+      }finally{
+        setBusy(btn, false);                    // 還原按鈕狀態
+      }
+    });
+    
+    // 修改：查看所有公司評分（替換你原本的 $('#btnList').addEventListener(...) ）
+    document.getElementById('btnList').addEventListener('click', async ()=>{
+      const btn = document.getElementById('btnList');
+      setBusy(btn, true, '讀取中…');
+      try{
+        const items = await getMyListCached();  // 保留你原本的資料取得
+        renderMyList(items);                    // 保留你原本的渲染
+      }catch(e){
+        toast('讀取失敗', false);
+      }finally{
+        setBusy(btn, false);
+      }
+    });
     $('#project').addEventListener('change', ()=>{ 
     resetScores(); 
     validateAll();
     toast('已切換團隊，請輸入新分數'); 
   });
-    $('#btnFinal').addEventListener('click', ()=>{ openFinalModal().catch(()=>toast('讀取失敗',false)); });
+    // 修改：開啟最終確認（替換你原本的 $('#btnFinal').addEventListener(...) ）
+  document.getElementById('btnFinal').addEventListener('click', async ()=>{
+    const btn = document.getElementById('btnFinal');
+    setBusy(btn, true, '載入中…');
+    try{
+      await openFinalModal();                 // 保留你原本的開啟 Modal 邏輯
+    }catch(e){
+      toast('讀取失敗', false);
+    }finally{
+      setBusy(btn, false);
+    }
+  });
     $('#finalClose').addEventListener('click', ()=>{ document.getElementById('finalModal').style.display='none'; });
-    $('#finalSubmit').addEventListener('click', ()=>{ submitFinalConfirm().catch(()=>{}); });
+
+    // 修改：送出最終確認（替換你原本的 $('#finalSubmit').addEventListener(...) ）
+    document.getElementById('finalSubmit').addEventListener('click', async ()=>{
+      const btn = document.getElementById('finalSubmit');
+      setBusy(btn, true, '送出中…');
+      try{
+        await submitFinalConfirm();             // 保留你原本的送出流程
+      }finally{
+        setBusy(btn, false);
+      }
+    });
+
+    // 新增：訊息區為無障礙狀態區
+  const msgEl = document.getElementById('msg');
+  if (msgEl){ msgEl.setAttribute('role','status'); msgEl.setAttribute('aria-live','polite'); }
 
     // 初始化
     liveTotal();
@@ -717,5 +872,6 @@
       .then(()=> checkAndPromptFinal())
       .catch(e=> toast(e.message||'初始化失敗', false));
   </script>
+
 </body>
 </html>
