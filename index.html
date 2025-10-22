@@ -182,18 +182,18 @@ button.is-busy { pointer-events: none; opacity: .85; }
           <input type="number" id="T" min="0" max="20" step="0.01" value="0">
         </div>
       </section>
-      <section class="block" id="secF">
-        <header><h3>四、財務狀況 <span class="badge">上限10分</span></h3></header>
-        <div class="grid">
-          <label for="F">財務狀況整體評分</label>
-          <input type="number" id="F" min="0" max="10" step="0.01" value="0">
-        </div>
-      </section>
       <section class="block" id="secE">
-        <header><h3>五、經營團隊 <span class="badge">上限10分</span></h3></header>
+        <header><h3>四、經營團隊 <span class="badge">上限10分</span></h3></header>
         <div class="grid">
           <label for="E">經營團隊整體評分</label>
           <input type="number" id="E" min="0" max="10" step="0.01" value="0">
+        </div>
+      </section>
+      <section class="block" id="secF">
+        <header><h3>五、財務狀況 <span class="badge">上限10分</span></h3></header>
+        <div class="grid">
+          <label for="F">財務狀況整體評分</label>
+          <input type="number" id="F" min="0" max="10" step="0.01" value="0">
         </div>
       </section>
     </div>
@@ -271,7 +271,7 @@ button.is-busy { pointer-events: none; opacity: .85; }
 
     const LIMITS = { I:30, M:30, T:20, F:10, E:10 };
     const NAMES = { I:'產品創新與行銷', M:'市場需求與規模', T:'技術門檻', F:'財務狀況', E:'經營團隊' };
-    const IDS = ['I','M','T','F','E'];
+    const IDS = ['I','M','T','E','F'];
 
     const $ = q => document.querySelector(q);
     const params = new URLSearchParams(location.search);
