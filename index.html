@@ -156,7 +156,7 @@ button.is-busy { pointer-events: none; opacity: .85; }
       <select id="project"></select>
       <button id="btnLast">查看評分</button>
       <button id="btnList">查看所有公司評分</button>
-      <button id="btnFinal"><span class="hint">23家成績最終確認</span></button>
+      <button id="btnFinal"><span class="hint">20家成績最終確認</span></button>
       <div class="scoreBox">得分計算：<b id="liveTotal">0.00</b></div>
     </div>
 
@@ -249,7 +249,7 @@ button.is-busy { pointer-events: none; opacity: .85; }
             </label>
           </div>
           <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-            <button id="finalSubmit" class="primary">送出23家成績最終確認</button>
+            <button id="finalSubmit" class="primary">送出20家成績最終確認</button>
           </div>
           <div id="finalMsg" class="muted" style="margin-top:8px"></div>
         </div>
@@ -650,7 +650,7 @@ button.is-busy { pointer-events: none; opacity: .85; }
         }).join('');
       }
 
-      hint.innerHTML = `已評隊伍數：<b>${rawItems.length}</b>／全部隊伍數：<b>${TOTAL_PROJECTS}</b>。${rawItems.length<TOTAL_PROJECTS ? '（尚未評完，不能送出23家成績最終確認）' : ''}`;
+      hint.innerHTML = `已評隊伍數：<b>${rawItems.length}</b>／全部隊伍數：<b>${TOTAL_PROJECTS}</b>。${rawItems.length<TOTAL_PROJECTS ? '（尚未評完，不能送出20家成績最終確認）' : ''}`;
 
       tbody.querySelectorAll('button[data-pid]').forEach(btn=>{
         btn.addEventListener('click', ()=>{
