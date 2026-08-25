@@ -149,7 +149,7 @@ button.is-busy { pointer-events: none; opacity: .85; }
 
   <div class="wrap">
     <h1 id="title">評分系統（五構面版）</h1>
-    <div class="sub"><span class="hint">各構面輸入分別有上限 30、30、20、10、10分，可輸入到小數點後兩位。</span></div>
+    <div class="sub"><span class="hint">各構面輸入分別有上限 30、35、20、10、5分，可輸入到小數點後兩位。</span></div>
 
     <div class="row">
       <label for="project">決選公司</label>
@@ -169,10 +169,10 @@ button.is-busy { pointer-events: none; opacity: .85; }
         </div>
       </section>
       <section class="block" id="secM">
-        <header><h3>二、市場需求與規模 <span class="badge">上限30分</span></h3></header>
+        <header><h3>二、市場需求與規模 <span class="badge">上限35分</span></h3></header>
         <div class="grid">
           <label for="M">市場需求與規模整體評分</label>
-          <input type="number" id="M" min="0" max="30" step="0.01" value="0">
+          <input type="number" id="M" min="0" max="35" step="0.01" value="0">
         </div>
       </section>
       <section class="block" id="secT">
@@ -190,10 +190,10 @@ button.is-busy { pointer-events: none; opacity: .85; }
         </div>
       </section>
       <section class="block" id="secF">
-        <header><h3>五、財務狀況 <span class="badge">上限10分</span></h3></header>
+        <header><h3>五、財務狀況 <span class="badge">上限5分</span></h3></header>
         <div class="grid">
           <label for="F">財務狀況整體評分</label>
-          <input type="number" id="F" min="0" max="10" step="0.01" value="0">
+          <input type="number" id="F" min="0" max="5" step="0.01" value="0">
         </div>
       </section>
     </div>
@@ -269,7 +269,7 @@ button.is-busy { pointer-events: none; opacity: .85; }
     // ==== 後端 Web App 入口（換成部署的網址）====
     const API_URL = 'https://script.google.com/macros/s/AKfycby4ySNKWJsDz73Wz2lsT9_tNYIACM4U-K7oDm4twjrg20tdDzDqanVNDyLEwX9rBP5Y/exec'; //46版--提升速度
 
-    const LIMITS = { I:30, M:30, T:20, F:10, E:10 };
+    const LIMITS = { I:30, M:35, T:20, F:10, E:5 };
     const NAMES = { I:'產品創新與行銷', M:'市場需求與規模', T:'技術門檻', F:'財務狀況', E:'經營團隊' };
     const IDS = ['I','M','T','E','F'];
 
